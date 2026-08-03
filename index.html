@@ -295,6 +295,8 @@ ko:{
   newCopy:"이 줄 복사하기",
   newWhy:"다른 기기에서도 같은 비밀번호를 쓰려면 이 줄을 파일에 넣어야 합니다. 이 줄만 봐서는 비밀번호를 알 수 없으니 안심하고 전달하셔도 됩니다.",
   newGo:"운영실로 들어가기",
+  newStill:"아직 예전 비밀번호가 쓰입니다. 아래 줄을 파일에 갈아 끼워야 새 비밀번호가 됩니다.",
+  newSecret:"비밀번호 자체는 아무에게도 알려주지 마세요. 이 줄만 전달하면 됩니다.",
 
   /* 결과 잠금 · 열쇠번호 */
   pinLabel:"열쇠번호 4자리",
@@ -460,6 +462,8 @@ en:{
   newCopy:"Copy this line",
   newWhy:"To use the same password on other devices, put this line in the file. The line alone does not reveal your password, so it is safe to pass along.",
   newGo:"Go to the Studio",
+  newStill:"The old password is still in effect. Swap the line below into the file to make the new one work.",
+  newSecret:"Never tell anyone the password itself. Only this line needs to be passed along.",
 
   pinLabel:"4-digit key",
   pinHelp:"The 4 digits we sent you along with this. It keeps others from opening your plan.",
@@ -1122,7 +1126,10 @@ function unlockBytes(all, pin){
 
    잠금값 모양 : v1:소금:되섞은값
    ========================================================= */
-var OP_LOCK = "";              /* ← 여기에 잠금값을 넣으면 모든 기기에서 같은 비밀번호를 씁니다 */
+/* 이 줄이 채워져 있으면 모든 기기에서 같은 비밀번호를 씁니다.
+   비밀번호를 바꾸려면 운영실 → 비밀번호 에서 새로 정하고,
+   화면에 나오는 새 줄로 이 줄을 통째로 갈아 끼우면 됩니다. */
+var OP_LOCK = "v1:Wq5a8BvlftpFI-I9hdwhcA:8bKCcQWIBBDxJb9PQKVLaaBnVaM_sdp5V_Z_BYhy-1k";
 var OKEY  = "gil.oplock";      // 이 컴퓨터에만 저장해 둔 잠금값
 var OSKEY = "gil.opopen";      // 이 브라우저에서 이미 문을 열었는지
 
@@ -1460,10 +1467,15 @@ SCREENS.opNew = function(app){
       else { box.focus(); box.select(); flash(cp, t("copyManual"), t("newCopy")); }
     }}});
     made = h("div",{cls:"card stack",style:"margin-top:18px"},[
-      h("p",{cls:"okmsg",style:"margin:0",text:t("newDone")}),
+      /* 파일에 이미 잠금값이 박혀 있으면, 그것이 언제나 우선입니다.
+         그 사실을 모르면 "바꿨는데 왜 예전 비밀번호로 들어가지?" 하고 헤맵니다. */
+      OP_LOCK
+        ? h("p",{cls:"warn",style:"margin:0",text:t("newStill")})
+        : h("p",{cls:"okmsg",style:"margin:0",text:t("newDone")}),
       h("div",{cls:"eyebrow",text:t("newLine")}),
       box, cp,
       h("p",{cls:"note",style:"margin:0",text:t("newWhy")}),
+      h("p",{cls:"note",style:"margin:0",text:t("newSecret")}),
       h("button",{cls:"ghost",text:t("newGo"),on:{click:function(){ S.newLock = ""; go("opSheet"); }}})
     ]);
   }
