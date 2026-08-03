@@ -231,6 +231,10 @@ ko:{
   cKakaoId:"카카오톡 아이디", cKakaoIdPh:"아이디",
   cPhone:"전화번호 (공개하면 스팸이 옵니다)", cPhonePh:"010-0000-0000",
   cEmail:"이메일", cEmailPh:"name@example.com",
+  cIg:"인스타그램 아이디 (외국인 손님용)", cIgPh:"아이디만 (@ 없이)",
+  igLabel:"인스타그램", sendIg:"인스타그램 디엠 보내기",
+  alsoKakao:"카카오톡을 쓰신다면",
+  enContactTip:"영어 화면에서는 이메일과 인스타그램을 먼저 보여줍니다. 외국인 손님은 카카오톡을 안 쓰는 경우가 많습니다.",
   saveContact:"저장하기", contactSaved:"저장했습니다",
   contactWarn:"이 설정은 이 컴퓨터에만 저장됩니다. 사장님 화면에도 보이게 하려면 파일에 넣어야 합니다.",
   copyLine:"파일에 넣을 줄 복사",
@@ -266,6 +270,31 @@ ko:{
   /* 화면 위쪽 단계 이름 */
   stepStart:"시작", stepDue:"납기", stepAbout:"내용", stepSend:"신청", stepResult:"결과",
   lblCut:"컷", lblShot:"촬영", lblCapt:"자막", lblVoice:"대사",
+
+  /* 운영실 자물쇠 */
+  pwBtn:"비밀번호",
+  gateTitle:"운영실 문",
+  gateSub:"비밀번호를 넣어주세요. 사장님 화면이 아닙니다.",
+  gatePh:"비밀번호",
+  gateOpen:"문 열기",
+  gateChecking:"확인하는 중…",
+  gateEmpty:"비밀번호를 넣어주세요.",
+  gateWrong:"비밀번호가 맞지 않습니다.",
+  gateHint:"비밀번호를 잊으셨다면, 파일 안의 OP_LOCK 줄을 비우면 다시 정할 수 있습니다.",
+  newTitle:"비밀번호 정하기",
+  newChange:"비밀번호 바꾸기",
+  newSub:"운영실에 아무나 못 들어오게 막습니다. 여섯 글자 이상으로 정해주세요.",
+  newPh1:"새 비밀번호",
+  newPh2:"한 번 더",
+  newMake:"비밀번호 만들기",
+  newShort:"여섯 글자 이상으로 정해주세요.",
+  newDiff:"두 번 넣은 것이 서로 다릅니다.",
+  newFail:"이 브라우저에서는 자물쇠를 만들 수 없습니다.",
+  newDone:"정했습니다. 이 브라우저에서는 바로 쓸 수 있습니다.",
+  newLine:"파일에 넣을 줄",
+  newCopy:"이 줄 복사하기",
+  newWhy:"다른 기기에서도 같은 비밀번호를 쓰려면 이 줄을 파일에 넣어야 합니다. 이 줄만 봐서는 비밀번호를 알 수 없으니 안심하고 전달하셔도 됩니다.",
+  newGo:"운영실로 들어가기",
 
   /* 결과 잠금 · 열쇠번호 */
   pinLabel:"열쇠번호 4자리",
@@ -374,6 +403,10 @@ en:{
   cKakaoId:"KakaoTalk ID", cKakaoIdPh:"id",
   cPhone:"Phone (public numbers attract spam)", cPhonePh:"010-0000-0000",
   cEmail:"Email", cEmailPh:"name@example.com",
+  cIg:"Instagram handle (for overseas customers)", cIgPh:"handle only, no @",
+  igLabel:"Instagram", sendIg:"Send an Instagram DM",
+  alsoKakao:"If you use KakaoTalk",
+  enContactTip:"On the English screen, email and Instagram come first. Overseas customers often do not use KakaoTalk.",
   saveContact:"Save", contactSaved:"Saved",
   contactWarn:"This is saved on this computer only. To show it to customers, put it in the file.",
   copyLine:"Copy the line for the file",
@@ -403,6 +436,30 @@ en:{
 
   stepStart:"Start", stepDue:"Due", stepAbout:"About", stepSend:"Request", stepResult:"Result",
   lblCut:"Cut", lblShot:"Shot", lblCapt:"Caption", lblVoice:"Voice",
+
+  pwBtn:"Password",
+  gateTitle:"Studio door",
+  gateSub:"Enter the password. This is not the customer screen.",
+  gatePh:"Password",
+  gateOpen:"Open",
+  gateChecking:"Checking…",
+  gateEmpty:"Please enter the password.",
+  gateWrong:"That password does not match.",
+  gateHint:"If you forgot it, clear the OP_LOCK line in the file and you can set a new one.",
+  newTitle:"Set a password",
+  newChange:"Change the password",
+  newSub:"This keeps strangers out of the Studio. Use at least 6 characters.",
+  newPh1:"New password",
+  newPh2:"Type it again",
+  newMake:"Create password",
+  newShort:"Use at least 6 characters.",
+  newDiff:"The two entries do not match.",
+  newFail:"This browser cannot create the lock.",
+  newDone:"Done. It works in this browser right away.",
+  newLine:"Line to put in the file",
+  newCopy:"Copy this line",
+  newWhy:"To use the same password on other devices, put this line in the file. The line alone does not reveal your password, so it is safe to pass along.",
+  newGo:"Go to the Studio",
 
   pinLabel:"4-digit key",
   pinHelp:"The 4 digits we sent you along with this. It keeps others from opening your plan.",
@@ -511,7 +568,16 @@ var CONTACT_DEFAULT = {
   kakaoOpen : "https://pf.kakao.com/_uUxbBX/chat",
   kakaoId   : "",
   phone     : "",
-  email     : ""
+  email     : "",
+
+  /* 외국인 사장님용 — 영어 화면에서 먼저 보여줍니다.
+     카카오톡을 안 쓰는 분이 많아서, 카톡만 걸어두면 신청할 방법이 없습니다.
+
+     - instagram : 인스타그램 아이디. @ 없이 아이디만 적으세요.
+                   디엠 창이 바로 열립니다.
+     - email     : 위 email 칸을 함께 씁니다.
+                   공개하면 스팸이 오니, 따로 만든 주소를 쓰는 편이 낫습니다. */
+  instagram : ""
 };
 var CKEY = "gil.contact";
 
@@ -550,11 +616,21 @@ function loadContact(){
   try{ d = JSON.parse(localStorage.getItem(CKEY) || "null"); }catch(e){}
   var pick = function(k){ return (d && d[k]) ? d[k] : (CONTACT_DEFAULT[k] || ""); };
   return { kakaoOpen:pick("kakaoOpen"), kakaoId:pick("kakaoId"),
-           phone:pick("phone"), email:pick("email") };
+           phone:pick("phone"), email:pick("email"),
+           instagram:pick("instagram") };
 }
 function saveContact(){ try{ localStorage.setItem(CKEY, JSON.stringify(C)); }catch(e){} }
 var C = loadContact();
-function hasContact(){ return !!(C.kakaoOpen || C.kakaoId || C.phone || C.email); }
+function hasContact(){
+  /* 영어 화면에서는 카카오톡을 안 쓰는 분이 많습니다.
+     그래서 '보낼 곳이 있느냐'를 화면 말에 따라 따로 봅니다. */
+  if(S.lang === "en") return !!(C.email || C.instagram || C.kakaoOpen || C.kakaoId);
+  return !!(C.kakaoOpen || C.kakaoId || C.phone || C.email);
+}
+/* 인스타그램 디엠 주소를 만듭니다. 아이디만 적어도 되게 @ 와 주소를 걷어냅니다. */
+function igUser(v){
+  return String(v || "").trim().replace(/^@/,"").replace(/^https?:\/\/(www\.)?instagram\.com\//i,"").replace(/\/.*$/,"");
+}
 
 /* 넣은 링크가 어느 쪽인지 알아봅니다.
    둘 다 대화는 1:1이지만, 채널은 누구나 들어와 볼 수 있는 '홈 화면'이 딸려 옵니다. */
@@ -673,7 +749,14 @@ var S = {
   ledgerOk:true,     // 방금 만든 건이 장부에 잘 적혔는지
   ledgerMsg:"",      // 장부 화면에 띄울 알림
   restore:"",        // 백업 글을 붙여넣는 칸
-  showBackup:false   // 백업 글을 화면에 펼쳐 보여줄지
+  showBackup:false,  // 백업 글을 화면에 펼쳐 보여줄지
+
+  /* 운영실 자물쇠 */
+  opPw:"",           // 문에서 넣는 비밀번호
+  opBusy:false,      // 되섞는 중 (두 번 누르는 것을 막습니다)
+  opTries:0,         // 몇 번 틀렸는지
+  newPw1:"", newPw2:"",   // 새 비밀번호와 확인
+  newLock:""         // 방금 만든 잠금값
 };
 
 /* locked:true 인 등급은 화면에서 고를 수 없습니다.
@@ -1026,6 +1109,77 @@ function unlockBytes(all, pin){
   }).catch(function(){ return null; });     // 열쇠번호가 틀리면 여기로 옵니다
 }
 
+/* =========================================================
+   운영실 자물쇠
+
+   왜 필요한가:
+   사이트가 공개라 주소만 알면 누구나 들어옵니다.
+   운영실에는 장부와 열쇠번호가 들어 있어서 남이 보면 안 됩니다.
+
+   비밀번호를 코드에 그대로 적으면 안 됩니다. 저장소가 공개라 다 보입니다.
+   그래서 비밀번호를 20만 번 되섞은 '잠금값'만 적어 둡니다.
+   잠금값을 봐도 원래 비밀번호는 알 수 없고, 하나씩 넣어보는 것도 매우 느립니다.
+
+   잠금값 모양 : v1:소금:되섞은값
+   ========================================================= */
+var OP_LOCK = "";              /* ← 여기에 잠금값을 넣으면 모든 기기에서 같은 비밀번호를 씁니다 */
+var OKEY  = "gil.oplock";      // 이 컴퓨터에만 저장해 둔 잠금값
+var OSKEY = "gil.opopen";      // 이 브라우저에서 이미 문을 열었는지
+
+/* 지금 쓰이는 잠금값. 파일에 적힌 것이 언제나 우선입니다. */
+function currentLock(){
+  if(OP_LOCK) return OP_LOCK;
+  try{ return localStorage.getItem(OKEY) || ""; }catch(e){ return ""; }
+}
+function hasLock(){ return !!currentLock(); }
+
+/* 비밀번호를 되섞습니다. 결과 잠금과 같은 방식이되 소금 문구만 다릅니다. */
+function lockBits(pw, salt){
+  var raw = new TextEncoder().encode("길자물쇠:" + String(pw));
+  return crypto.subtle.importKey("raw", raw, "PBKDF2", false, ["deriveBits"])
+    .then(function(base){
+      return crypto.subtle.deriveBits(
+        { name:"PBKDF2", salt:salt, iterations:LOCK_ROUNDS, hash:"SHA-256" }, base, 256);
+    })
+    .then(function(b){ return new Uint8Array(b); });
+}
+/* 새 잠금값 만들기 */
+function makeLock(pw){
+  if(!hasCrypto()) return Promise.resolve("");
+  var salt = crypto.getRandomValues(new Uint8Array(16));
+  return lockBits(pw, salt).then(function(bits){
+    return "v1:" + b64url(salt) + ":" + b64url(bits);
+  });
+}
+/* 넣은 비밀번호가 잠금값과 맞는지 봅니다 */
+function checkLock(pw, lock){
+  if(!hasCrypto()) return Promise.resolve(false);
+  var p = String(lock || "").split(":");
+  if(p.length !== 3 || p[0] !== "v1") return Promise.resolve(false);
+  var salt, want;
+  try{ salt = unb64url(p[1]); want = unb64url(p[2]); }catch(e){ return Promise.resolve(false); }
+  return lockBits(pw, salt).then(function(got){
+    if(got.length !== want.length) return false;
+    /* 한 글자씩 끝까지 비교합니다. 중간에 멈추면 걸리는 시간으로 눈치챌 수 있습니다. */
+    var diff = 0;
+    for(var i=0;i<got.length;i++) diff |= (got[i] ^ want[i]);
+    return diff === 0;
+  }).catch(function(){ return false; });
+}
+/* 문을 열어 둔 상태 — 브라우저를 닫으면 사라집니다 */
+function isOpened(){
+  try{ return sessionStorage.getItem(OSKEY) === "1"; }catch(e){ return false; }
+}
+function setOpened(v){
+  try{ v ? sessionStorage.setItem(OSKEY,"1") : sessionStorage.removeItem(OSKEY); }catch(e){}
+}
+/* 운영실로 들어갈 때 어느 화면부터 보여줄지 정합니다 */
+function opEntry(){
+  if(!hasLock()) return "opNew";      // 아직 비밀번호를 안 정했다
+  if(isOpened())  return "opSheet";   // 이미 이 브라우저에서 열었다
+  return "opGate";                    // 비밀번호를 물어본다
+}
+
 /* 열쇠번호 4자리를 새로 뽑습니다. 0으로 시작하지 않게 1000~9999 사이로 만듭니다. */
 function newPin(){
   if(hasCrypto()){
@@ -1216,10 +1370,121 @@ function opBar(){
       h("button",{cls:"tiny",text:t("reply"),on:{click:function(){ go("opReply"); }}}),
       h("button",{cls:"tiny",text:t("contact") + (hasContact() ? "" : " ⚠"),
                   on:{click:function(){ go("opContact"); }}}),
-      h("button",{cls:"tiny",text:t("exit"),on:{click:function(){ go("intro"); }}})
+      h("button",{cls:"tiny",text:t("pwBtn") + (hasLock() ? "" : " ⚠"),
+                  on:{click:function(){
+                    S.newPw1 = ""; S.newPw2 = ""; S.newLock = ""; go("opNew");
+                  }}}),
+      /* 나갈 때 문을 다시 잠급니다. 남이 뒤로 가기를 눌러도 못 들어옵니다. */
+      h("button",{cls:"tiny",text:t("exit"),on:{click:function(){
+        setOpened(false); go("intro");
+      }}})
     ])
   ]);
 }
+
+/* ---------- 운영실 문 : 비밀번호 묻기 ---------- */
+SCREENS.opGate = function(app){
+  var pw = h("input",{type:"password",placeholder:t("gatePh"),
+    on:{input:function(e){ S.opPw = e.target.value; },
+        keydown:function(e){ if(e.key === "Enter") tryOpen(); }}});
+  pw.value = S.opPw;
+
+  var btn = h("button",{cls:"btn",text:t("gateOpen")});
+  var tryOpen = function(){
+    if(S.opBusy) return;
+    if(!S.opPw){ S.err = t("gateEmpty"); render(); return; }
+    /* 되섞는 데 잠깐 걸립니다. 누른 티를 내야 두 번 누르지 않습니다. */
+    S.opBusy = true; btn.disabled = true; btn.textContent = t("gateChecking");
+    checkLock(S.opPw, currentLock()).then(function(ok){
+      S.opBusy = false;
+      if(ok){ setOpened(true); S.opPw = ""; S.opTries = 0; go("opSheet"); return; }
+      S.opTries = (S.opTries || 0) + 1;
+      S.err = t("gateWrong");
+      render();
+    });
+  };
+  btn.addEventListener("click", tryOpen);
+
+  app.appendChild(h("div",{style:"padding-top:118px"},[
+    eyebrow(t("op")),
+    h("h2",{cls:"disp h2",style:"font-size:26px",text:t("gateTitle")}),
+    h("p",{cls:"sub",style:"margin-top:6px",text:t("gateSub")}),
+    h("div",{style:"margin-top:22px"},[ pw ]),
+    S.err ? h("p",{cls:"warn",style:"margin-top:12px",text:S.err}) : null,
+    S.opTries >= 3 ? h("p",{cls:"note",style:"margin-top:8px",text:t("gateHint")}) : null,
+    h("div",{cls:"stack",style:"margin-top:16px"},[
+      btn,
+      h("button",{cls:"ghost",text:t("back"),on:{click:function(){ S.opPw = ""; go("intro"); }}})
+    ])
+  ]));
+};
+
+/* ---------- 운영실 문 : 비밀번호 만들기 ----------
+
+   여기서 만든 '잠금값'을 파일에 넣어야 다른 기기에서도 같은 비밀번호를 씁니다.
+   잠금값만 봐서는 원래 비밀번호를 알 수 없습니다.
+   ------------------------------------------------- */
+SCREENS.opNew = function(app){
+  var a = h("input",{type:"password",placeholder:t("newPh1"),
+    on:{input:function(e){ S.newPw1 = e.target.value; }}});
+  a.value = S.newPw1;
+  var b = h("input",{type:"password",placeholder:t("newPh2"),
+    on:{input:function(e){ S.newPw2 = e.target.value; }}});
+  b.value = S.newPw2;
+
+  var mkBtn = h("button",{cls:"btn",text:t("newMake")});
+  var doMake = function(){
+    if(S.opBusy) return;
+    if(S.newPw1.length < 6){ S.err = t("newShort"); render(); return; }
+    if(S.newPw1 !== S.newPw2){ S.err = t("newDiff"); render(); return; }
+    S.opBusy = true; mkBtn.disabled = true; mkBtn.textContent = t("gateChecking");
+    makeLock(S.newPw1).then(function(lock){
+      S.opBusy = false;
+      if(!lock){ S.err = t("newFail"); render(); return; }
+      try{ localStorage.setItem(OKEY, lock); }catch(e){}
+      S.newLock = lock;
+      S.newPw1 = ""; S.newPw2 = "";
+      setOpened(true);
+      S.err = "";
+      render();
+    });
+  };
+  mkBtn.addEventListener("click", doMake);
+
+  var made = null;
+  if(S.newLock){
+    var box = h("textarea",{rows:3,cls:"mono",readonly:true});
+    box.value = 'var OP_LOCK = "' + S.newLock + '";';
+    var cp = h("button",{cls:"btn",text:t("newCopy"),on:{click:function(){
+      if(copyText(box.value)) flash(cp, t("copied"), t("newCopy"));
+      else { box.focus(); box.select(); flash(cp, t("copyManual"), t("newCopy")); }
+    }}});
+    made = h("div",{cls:"card stack",style:"margin-top:18px"},[
+      h("p",{cls:"okmsg",style:"margin:0",text:t("newDone")}),
+      h("div",{cls:"eyebrow",text:t("newLine")}),
+      box, cp,
+      h("p",{cls:"note",style:"margin:0",text:t("newWhy")}),
+      h("button",{cls:"ghost",text:t("newGo"),on:{click:function(){ S.newLock = ""; go("opSheet"); }}})
+    ]);
+  }
+
+  app.appendChild(h("div",{style:"padding-top:100px"},[
+    eyebrow(t("op")),
+    h("h2",{cls:"disp h2",style:"font-size:24px",
+            text:hasLock() ? t("newChange") : t("newTitle")}),
+    h("p",{cls:"sub",style:"margin-top:6px",text:t("newSub")}),
+    h("div",{cls:"stack",style:"margin-top:20px"},[ a, b ]),
+    S.err ? h("p",{cls:"warn",style:"margin-top:12px",text:S.err}) : null,
+    h("div",{cls:"stack",style:"margin-top:16px"},[
+      mkBtn,
+      h("button",{cls:"ghost",text:t("back"),on:{click:function(){
+        S.newPw1 = ""; S.newPw2 = ""; S.newLock = "";
+        go(hasLock() && isOpened() ? "opSheet" : "intro");
+      }}})
+    ]),
+    made
+  ]));
+};
 
 /* ---------- 운영실 : 장부 ----------
 
@@ -1418,7 +1683,8 @@ SCREENS.opContact = function(app){
     ["kakaoOpen", t("cKakaoOpen"), t("cKakaoOpenPh")],
     ["kakaoId",   t("cKakaoId"),   t("cKakaoIdPh")],
     ["phone",     t("cPhone"),     t("cPhonePh")],
-    ["email",     t("cEmail"),     t("cEmailPh")]
+    ["email",     t("cEmail"),     t("cEmailPh")],
+    ["instagram", t("cIg"),        t("cIgPh")]
   ];
   var boxes = [];
   fields.forEach(function(f){
@@ -1477,7 +1743,8 @@ SCREENS.opContact = function(app){
       '  kakaoOpen : "' + (C.kakaoOpen || "") + '",\n' +
       '  kakaoId   : "' + (C.kakaoId   || "") + '",\n' +
       '  phone     : "' + (C.phone     || "") + '",\n' +
-      '  email     : "' + (C.email     || "") + '"\n};';
+      '  email     : "' + (C.email     || "") + '",\n' +
+      '  instagram : "' + (C.instagram || "") + '"\n};';
     if(copyText(line)) flash(lbtn, t("copied"), t("copyLine"));
   }}});
 
@@ -1506,6 +1773,9 @@ SCREENS.opContact = function(app){
 
     h("div",{cls:"stack",style:"margin-top:16px"}, boxes),
 
+    /* 왜 칸이 두 벌인지 알려 줍니다 */
+    h("p",{cls:"note",style:"margin-top:10px",text:t("enContactTip")}),
+
     h("div",{style:"margin-top:26px"},[ eyebrow(t("howOpen")) ]),
     howCard,
 
@@ -1529,7 +1799,9 @@ SCREENS.intro = function(app){
       h("button",{cls:"ghost",text:t("openResult"),on:{click:function(){ go("openCode"); }}})
     ]),
     h("div",{style:"margin-top:34px"},[
-      h("button",{cls:"tiny",text:t("opRoom"),on:{click:function(){ go("opSheet"); }}})
+      /* 운영실은 자물쇠를 지나야 들어갑니다.
+         비밀번호를 아직 안 정했으면 만드는 화면부터 나옵니다. */
+      h("button",{cls:"tiny",text:t("opRoom"),on:{click:function(){ go(opEntry()); }}})
     ])
   ]));
 };
@@ -1663,30 +1935,64 @@ function contactBlock(){
     ]);
   }
   var rows = [];
+  var en = S.lang === "en";
+  var ig = igUser(C.instagram);
 
-  if(C.kakaoOpen){
-    rows.push(h("a",{cls:"btn linkbtn",href:C.kakaoOpen,target:"_blank",
+  /* 한 칸씩 그리는 작은 도구들 — 순서만 바꿔 끼우면 되게 나눠 둡니다 */
+  var kakaoRows = function(main){
+    if(!C.kakaoOpen) return;
+    rows.push(h("a",{cls:(main ? "btn" : "ghost") + " linkbtn",href:C.kakaoOpen,target:"_blank",
                      rel:"noopener noreferrer",text:t("goKakao")}));
     rows.push(copyRow("", C.kakaoOpen));
     /* 가게 사정을 적어 보내는 일이라, 누가 보는지가 사장님께 제일 큰 걱정입니다.
        보내기 직전에 그 걱정을 없애 줍니다. 링크 종류에 맞는 말로 적습니다. */
     rows.push(h("p",{cls:"note",style:"margin:2px 0 0",
       text:kakaoKind(C.kakaoOpen) === "open" ? t("privOpen") : t("privChannel")}));
-  }
-  if(C.kakaoId){
+  };
+  var idRow = function(){
+    if(!C.kakaoId) return;
     rows.push(h("div",{cls:"eyebrow",style:"margin-top:6px",text:t("kakaoIdLabel")}));
     rows.push(copyRow("", C.kakaoId));
-  }
-  if(C.phone){
+  };
+  var phoneRow = function(){
+    if(!C.phone) return;
     rows.push(h("div",{cls:"eyebrow",style:"margin-top:6px",text:t("phoneLabel")}));
     rows.push(h("a",{cls:"ghost linkbtn",href:"sms:" + C.phone.replace(/[^0-9+]/g,""),
                      text:t("sendSms")}));
     rows.push(copyRow("", C.phone));
-  }
-  if(C.email){
+  };
+  var mailRow = function(main){
+    if(!C.email) return;
     rows.push(h("div",{cls:"eyebrow",style:"margin-top:6px",text:t("emailLabel")}));
-    rows.push(h("a",{cls:"ghost linkbtn",href:"mailto:" + C.email,text:t("sendMail")}));
+    rows.push(h("a",{cls:(main ? "btn" : "ghost") + " linkbtn",href:"mailto:" + C.email,
+                     text:t("sendMail")}));
     rows.push(copyRow("", C.email));
+  };
+  var igRow = function(main){
+    if(!ig) return;
+    rows.push(h("div",{cls:"eyebrow",style:"margin-top:6px",text:t("igLabel")}));
+    rows.push(h("a",{cls:(main ? "btn" : "ghost") + " linkbtn",
+                     href:"https://ig.me/m/" + ig,target:"_blank",
+                     rel:"noopener noreferrer",text:t("sendIg")}));
+    rows.push(copyRow("", "@" + ig));
+  };
+
+  if(en){
+    /* 외국인 사장님은 카카오톡을 안 쓰는 경우가 많습니다.
+       이메일과 인스타그램을 앞에 두고, 카카오톡은 '쓰신다면' 정도로 뒤에 둡니다. */
+    mailRow(true);
+    igRow(!C.email);
+    if(C.kakaoOpen || C.kakaoId){
+      rows.push(h("div",{cls:"eyebrow",style:"margin-top:14px",text:t("alsoKakao")}));
+      kakaoRows(false);
+      idRow();
+    }
+  }else{
+    kakaoRows(true);
+    idRow();
+    phoneRow();
+    mailRow(false);
+    igRow(false);
   }
   return h("div",{cls:"card stack",style:"margin-top:10px"}, rows);
 }
