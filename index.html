@@ -1,0 +1,2079 @@
+<meta charset="utf-8">
+<title>길 — 광고 영상 만들어드립니다</title>
+
+<!--
+  ============================================================
+  길 (Gil) v2.0  —  소상공인 광고 영상 제작 대행
+
+  [문이 3개입니다]
+  ① 앞문 (사장님)  : 설명 적고 신청 → 신청서를 카톡으로 보냄
+  ② 운영실 (사장님 눈에 안 띔) : 신청서 받기 → 지시문 → 클로드 결과 → 결과 링크 만들기
+  ③ 결과 문 (사장님) : 받은 링크를 열면 제작안이 펼쳐짐
+
+  [왜 이렇게 나눴나]
+  브라우저에서 직접 AI를 부를 수 없고, 열쇠를 코드에 넣으면 누구나 꺼내 씁니다.
+  게다가 납기가 3시간~2일이므로 원래부터 사람이 중간에 들어가는 구조입니다.
+  사장님은 지시문·클로드·붙여넣기를 절대 보지 않습니다.
+
+  [나중에 서버를 붙이면]
+  운영실의 지시문 만들기·결과 받기만 서버 호출로 바꾸면 됩니다.
+  사장님 화면(앞문·결과 문)은 그대로 씁니다.
+  ============================================================
+-->
+
+<style>
+:root{
+  --road:#0B3B2A; --road2:#10553C; --panel:#0E4732; --edge:#1B6A4C;
+  --accent:#F2C230; --accent-ink:#F2C230; --paper:#F7FAF5; --mute:#93B7A3;
+  --spine:#082B1F; --field:#082B1F; --danger:#FF9B6A; --good:#5FD48A;
+  --disp:"Black Han Sans","HY헤드라인M","HY견고딕","Malgun Gothic","맑은 고딕",
+         "Apple SD Gothic Neo",system-ui,sans-serif;
+  --body:"Gothic A1","Malgun Gothic","맑은 고딕","Apple SD Gothic Neo",
+         system-ui,-apple-system,sans-serif;
+  --mono:ui-monospace,"Consolas","D2Coding","Menlo",monospace;
+}
+@media (prefers-color-scheme:light){
+  :root{ --road:#F4F6F1; --road2:#EAF0E7; --panel:#FFFFFF; --edge:#CBDCD0;
+    --accent-ink:#8A6410; --paper:#0B3B2A; --mute:#5C7A69;
+    --spine:#0B3B2A; --field:#FFFFFF; --danger:#B4491B; --good:#1E7A44; }
+}
+:root[data-theme="light"]{
+  --road:#F4F6F1; --road2:#EAF0E7; --panel:#FFFFFF; --edge:#CBDCD0;
+  --accent-ink:#8A6410; --paper:#0B3B2A; --mute:#5C7A69;
+  --spine:#0B3B2A; --field:#FFFFFF; --danger:#B4491B; --good:#1E7A44;
+}
+:root[data-theme="dark"]{
+  --road:#0B3B2A; --road2:#10553C; --panel:#0E4732; --edge:#1B6A4C;
+  --accent-ink:#F2C230; --paper:#F7FAF5; --mute:#93B7A3;
+  --spine:#082B1F; --field:#082B1F; --danger:#FF9B6A; --good:#5FD48A;
+}
+
+*{box-sizing:border-box;}
+/* 페이지 맨 밑바닥까지 도로 색으로 칠합니다.
+   이걸 안 하면 화면을 아래로 내렸을 때 바탕의 흰색이 드러납니다.
+   글자 색도 함께 정해 둬야 밝은 화면·어두운 화면 어디서든 안 깨집니다. */
+html,body{margin:0; padding:0; background:var(--road); color:var(--paper);}
+/* 스크롤 막대까지 화면 밝기에 맞춥니다. 안 맞추면 막대만 하얗게 튑니다.
+   위쪽 색 정의와 똑같은 차례로 둡니다 — 기본 어두움 → 밝은 화면 → 직접 고른 값 */
+html{color-scheme:dark;}
+@media (prefers-color-scheme:light){ html{color-scheme:light;} }
+:root[data-theme="dark"]{color-scheme:dark;}
+:root[data-theme="light"]{color-scheme:light;}
+.gil{min-height:100vh; background:var(--road); color:var(--paper);
+     font-family:var(--body); -webkit-font-smoothing:antialiased; line-height:1.6;}
+.wrap{max-width:520px; margin:0 auto; min-height:100vh; position:relative;
+      padding:0 20px 64px 46px;}
+.spine{position:absolute; left:14px; top:0; bottom:0; width:14px; background:var(--spine);}
+.dash{position:absolute; left:5px; top:0; width:4px; height:200%;
+  background:repeating-linear-gradient(to bottom,var(--accent) 0 26px,transparent 26px 52px);}
+.dash.run{animation:drive 1.1s linear infinite;}
+@keyframes drive{from{transform:translateY(0)} to{transform:translateY(-52px)}}
+@media (prefers-reduced-motion:reduce){.dash.run{animation:none}}
+
+.disp{font-family:var(--disp); font-weight:900; letter-spacing:-.03em; text-wrap:balance;}
+.eyebrow{font-size:11px; letter-spacing:.22em; color:var(--mute); font-weight:800;}
+.h1{font-size:68px; line-height:.92; margin:6px 0 0;}
+.h2{font-size:27px; line-height:1.22; margin:8px 0 6px;}
+.sub{color:var(--mute); font-size:14px; margin:0;}
+.lead{color:var(--paper); font-size:16px; margin:0;}
+
+.card{background:var(--panel); border:1px solid var(--edge); border-radius:2px; padding:16px;}
+.stack{display:flex; flex-direction:column; gap:12px;}
+.row{display:flex; gap:8px; flex-wrap:wrap;}
+
+.opt{width:100%; text-align:left; background:var(--panel); border:1px solid var(--edge);
+  border-radius:2px; padding:16px; color:var(--paper); cursor:pointer; font-family:inherit;
+  display:flex; gap:14px; align-items:flex-start; transition:border-color .15s,background .15s;}
+.opt:hover{border-color:var(--accent);}
+.opt[aria-pressed="true"]{border-color:var(--accent); background:var(--road2);}
+.dot{width:18px; height:18px; border-radius:50%; border:2px solid var(--mute); margin-top:3px; flex:none;}
+.opt[aria-pressed="true"] .dot{border-color:var(--accent); background:var(--accent);
+  box-shadow:inset 0 0 0 3px var(--road2);}
+.optName{font-family:var(--disp); font-weight:900; font-size:18px;}
+.price{font-size:12px; color:var(--accent-ink); font-weight:800; margin-top:2px;}
+/* 잠긴 등급 — 누를 수 없고, 실패가 아니라 '아직 안 연 문'으로 보이게 합니다 */
+.opt.lock{cursor:not-allowed; opacity:.5;}
+.opt.lock:hover{border-color:var(--edge);}
+.opt.lock .dot{border-style:dashed; background:none; box-shadow:none;}
+.lockprice{color:var(--mute) !important;}
+.note{font-size:12px; color:var(--mute); margin-top:4px;}
+
+.btn{width:100%; background:var(--accent); color:#0B3B2A; border:0; border-radius:2px;
+  padding:16px; font-family:var(--disp); font-weight:900; font-size:19px; cursor:pointer;
+  min-height:56px;}
+.btn:hover{filter:brightness(1.06);}
+.btn:disabled{background:var(--road2); color:var(--mute); cursor:not-allowed; filter:none;}
+.btn.done{background:var(--good); color:#04220F;}
+.ghost{width:100%; background:none; border:1px solid var(--edge); color:var(--mute);
+  border-radius:2px; padding:12px 14px; font-size:13px; font-weight:800; cursor:pointer;
+  font-family:inherit; min-height:46px;}
+.ghost:hover{border-color:var(--accent); color:var(--paper);}
+.ghost.done{border-color:var(--good); color:var(--good);}
+.mini{width:auto; padding:8px 12px; font-size:12px; min-height:38px; flex:0 0 auto;}
+/* 링크를 버튼처럼 보이게 — 글자가 가운데 오도록 */
+.linkbtn{display:flex; align-items:center; justify-content:center; text-decoration:none;
+  box-sizing:border-box;}
+a.btn.linkbtn{color:#0B3B2A;}
+a.ghost.linkbtn{color:var(--mute);}
+a.ghost.linkbtn:hover{color:var(--paper);}
+/* 복사할 글자 한 줄 */
+.copyrow{display:flex; align-items:center; gap:10px;}
+.copyval{flex:1 1 auto; font-family:var(--mono); font-size:12.5px; word-break:break-all;
+  color:var(--paper);}
+.tiny{background:none; border:0; color:var(--mute); font-size:11px; cursor:pointer;
+  font-family:inherit; padding:8px; opacity:.55;}
+.tiny:hover{opacity:1; color:var(--accent-ink);}
+
+textarea,input[type=text]{width:100%; background:var(--field); border:1px solid var(--edge);
+  color:var(--paper); border-radius:2px; padding:14px; font-size:15px; font-family:inherit;
+  resize:vertical; line-height:1.6;}
+textarea:focus,input:focus,button:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
+.mono{font-family:var(--mono); font-size:12.5px; line-height:1.65;}
+
+.chips{display:flex; gap:8px; flex-wrap:wrap;}
+.chip{background:var(--panel); border:1px solid var(--edge); color:var(--paper);
+  border-radius:999px; padding:9px 16px; cursor:pointer; font-family:inherit; font-size:14px;
+  min-height:42px;}
+.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#0B3B2A;
+  font-weight:800;}
+
+.tabs{display:flex; border-bottom:1px solid var(--edge); overflow-x:auto;}
+.tabs button{flex:0 0 auto; background:none; border:0; border-bottom:3px solid transparent;
+  color:var(--mute); padding:12px 14px; font-family:inherit; font-size:14px; font-weight:800;
+  cursor:pointer; min-height:48px; white-space:nowrap;}
+.tabs button[aria-selected="true"]{color:var(--paper); border-bottom-color:var(--accent);}
+
+.cut{display:grid; grid-template-columns:64px 1fr; gap:12px; padding:14px 0;
+  border-top:1px dashed var(--edge);}
+.cut:first-child{border-top:0;}
+.time{font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--accent-ink);
+  font-size:12.5px; font-weight:700;}
+.visual{font-size:14.5px;}
+.shot{font-size:12.5px; color:var(--mute); margin-top:4px;}
+.capt{font-size:13.5px; color:var(--accent-ink); margin-top:6px; font-weight:700;}
+.voice{font-size:13px; margin-top:4px; opacity:.85;}
+.num{font-family:var(--disp); font-weight:900; color:var(--accent-ink); font-size:13px;}
+.tag{display:inline-block; border:1px solid var(--edge); color:var(--mute); padding:5px 9px;
+  font-size:12px; margin:0 6px 6px 0;}
+.step{display:grid; grid-template-columns:26px 1fr; gap:10px; padding:9px 0;
+  border-top:1px dashed var(--edge); font-size:14px;}
+.step:first-child{border-top:0;}
+.plate{border:2px solid var(--paper); border-radius:6px; padding:8px 18px; display:inline-block;
+  font-family:var(--disp); font-weight:900; font-size:30px; line-height:1;}
+.warn{color:var(--danger); font-size:13px;}
+.okmsg{color:var(--good); font-size:13px;}
+.top{position:absolute; right:20px; top:20px; display:flex; gap:4px; z-index:2;}
+.top button{background:none; border:1px solid var(--edge); color:var(--mute); font-size:11px;
+  padding:6px 9px; cursor:pointer; font-weight:800; font-family:inherit;}
+.top button[aria-pressed="true"]{background:var(--accent); color:#0B3B2A; border-color:var(--accent);}
+.opbar{background:var(--road2); border:1px solid var(--accent); padding:8px 12px;
+  font-size:11px; font-weight:800; color:var(--accent-ink); letter-spacing:.1em;
+  margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:10px;}
+[hidden]{display:none !important;}
+</style>
+
+<div class="gil">
+<div class="wrap">
+  <div class="spine"><div class="dash" id="dash"></div></div>
+  <div class="top">
+    <button id="langKo" aria-pressed="true">한국어</button>
+    <button id="langEn" aria-pressed="false">EN</button>
+  </div>
+  <div id="app"></div>
+</div>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   1) 글자
+   ========================================================= */
+var T = {
+ko:{
+  tagline:"사장님 대신 광고 영상을 설계해 드립니다",
+  start:"광고 신청하기", openResult:"받은 결과 열기", opRoom:"운영실",
+  back:"뒤로", next:"다음", copy:"복사하기", copied:"복사했습니다",
+  copyManual:"글을 골라뒀습니다 · Ctrl+C",
+
+  s1:"언제까지 필요하세요?", s1sub:"모두 무료입니다",
+  fast:"3시간 안에", d1:"하루 안에", d2:"이틀 안에",
+  locked:"준비 중", free:"무료",
+  fastNote:"지금은 신청받지 않습니다",
+  d1Note:"광고 문구와 영상 구성, 촬영 지시까지",
+  d2Note:"광고 문구와 해시태그",
+  allFree:"지금은 모든 신청이 무료입니다.",
+
+  s2:"무엇을 알리고 싶으세요?",
+  s2sub:"가게 이름, 파는 것, 자랑거리를 편하게 적어주세요",
+  ph:"예) 일산에서 12년 된 손칼국수집입니다. 멸치 육수를 매일 새벽에 냅니다. 점심에 직장인 손님을 더 받고 싶어요.",
+  len:"영상 길이", who:"연락받을 곳", whoPh:"가게 이름 / 연락처",
+  send:"신청서 만들기",
+
+  s3:"신청서가 준비됐습니다", s3sub:"① 복사하고 ② 아래 보낼 곳으로 보내주세요",
+  copySheet:"① 신청서 복사하기", sheetDone:"복사했습니다 · 이제 아래로 보내주세요",
+  waitNote:"보내주시면 약속한 시간 안에 결과 링크를 보내드립니다.",
+  newOne:"처음으로",
+  sendTo:"② 여기로 보내주세요",
+  goKakao:"카카오톡 채널로 보내기", kakaoIdLabel:"카카오톡 아이디",
+  phoneLabel:"문자 보낼 번호", sendSms:"문자로 보내기",
+  emailLabel:"이메일", sendMail:"메일로 보내기",
+  noContact:"보낼 곳이 아직 설정되지 않았습니다. 운영실에서 연락처를 넣어주세요.",
+  after:"③ 보내신 뒤 이렇게 진행됩니다",
+  st1:"접수 확인", st1sub:"보내주시면 확인 메시지를 드립니다",
+  st2:"제작", st2sub:"고르신 시간 안에 만듭니다",
+  st3:"결과 보내드리기", st3sub:"링크를 누르면 촬영 대본까지 바로 보입니다",
+  noPush:"자동 응답이 아니라 사람이 직접 답합니다. 조금 기다려 주세요.",
+  reply:"답장", replySub:"복사해서 카톡에 붙여넣으세요",
+  replyNote:"고치셔도 됩니다. 고친 채로 복사됩니다.",
+  contact:"연락처", contactSub:"사장님 신청 화면에 보일 곳입니다",
+  cKakaoOpen:"카카오톡 1:1 오픈채팅 링크 (가장 안전)", cKakaoOpenPh:"https://open.kakao.com/o/...",
+  cKakaoId:"카카오톡 아이디", cKakaoIdPh:"아이디",
+  cPhone:"전화번호 (공개하면 스팸이 옵니다)", cPhonePh:"010-0000-0000",
+  cEmail:"이메일", cEmailPh:"name@example.com",
+  saveContact:"저장하기", contactSaved:"저장했습니다",
+  contactWarn:"이 설정은 이 컴퓨터에만 저장됩니다. 사장님 화면에도 보이게 하려면 파일에 넣어야 합니다.",
+  copyLine:"파일에 넣을 줄 복사",
+
+  s4:"결과 열기", s4sub:"받으신 링크를 눌러도 되고, 결과 코드를 여기에 붙여넣어도 됩니다",
+  phCode:"결과 코드를 여기에 붙여넣기", open:"펼쳐보기",
+  errCode:"코드를 읽지 못했습니다. 받으신 것을 그대로 다시 붙여넣어 주세요.",
+
+  tabPlan:"기획", tabScript:"대본", tabCaption:"자막", tabShot:"촬영 목록", tabEdit:"편집",
+  headlines:"광고 문구 3안", cta:"마지막 한 줄", tags:"해시태그",
+  captionAll:"자막만 모아 복사", props:"준비물", tips:"잘 찍는 요령",
+  capcut:"캡컷으로 편집하기", vllo:"블로로 편집하기",
+  download:"글자 파일로 내려받기", saved:"저장했습니다",
+  errSave:"저장하지 못했습니다. 다시 눌러보세요",
+
+  op:"운영실", opSub:"사장님 눈에는 보이지 않는 화면입니다",
+  op1:"1 · 신청서 받기", op1sub:"카톡으로 받은 신청서를 그대로 붙여넣으세요",
+  phSheet:"신청서 붙여넣기", readSheet:"읽기",
+  errSheet:"신청서를 읽지 못했습니다. [길 신청서]로 시작하는 글 전체를 붙여넣어 주세요.",
+  op2:"2 · 클로드에 보내기", op2sub:"복사해서 클로드에 붙여넣고, 나온 답을 가져오세요",
+  op3:"3 · 답 붙여넣기", op3sub:"클로드 답 전체를 그대로 붙여넣으세요",
+  phAns:"클로드 답 붙여넣기", makeLink:"사장님께 보낼 것 만들기",
+  errParse:"답을 읽지 못했습니다. 클로드 답 전체를 다시 붙여넣어 주세요.",
+  op4:"4 · 사장님께 보내기", op4sub:"둘 중 편한 것을 카톡으로 보내주세요",
+  copyLink:"결과 링크 복사", copyCode:"결과 코드 복사", preview:"내가 먼저 보기",
+  linkLong:"링크가 길어 카톡에서 잘릴 수 있습니다. 결과 코드를 보내주세요.",
+  exit:"나가기", sheetFrom:"신청",
+  reqTier:"납기", reqLen:"길이", reqWho:"연락처",
+
+  /* 고른 것 표시 */
+  picked:"고르셨습니다",
+
+  /* 화면 위쪽 단계 이름 */
+  stepStart:"시작", stepDue:"납기", stepAbout:"내용", stepSend:"신청", stepResult:"결과",
+  lblCut:"컷", lblShot:"촬영", lblCapt:"자막", lblVoice:"대사",
+
+  /* 결과 잠금 · 열쇠번호 */
+  pinLabel:"열쇠번호 4자리",
+  pinHelp:"카톡으로 함께 받으신 숫자 4자리입니다. 다른 사람이 열지 못하게 잠가 뒀습니다.",
+  pinNeed:"열쇠번호 4자리를 넣어주세요.",
+  pinWrong:"열쇠번호가 맞지 않습니다. 카톡에서 받은 4자리를 다시 확인해 주세요.",
+  pasteWhole:"카톡에서 받은 글을 통째로 붙여넣어도 됩니다. 알아서 찾아냅니다.",
+  thisPin:"이번 결과의 열쇠번호",
+  pinWhy:"코드만 새어 나가도 이 번호가 없으면 열리지 않습니다. 아래 '예쁜 화면으로 보낼 글 복사'를 쓰면 번호가 자동으로 함께 들어갑니다.",
+  pinSaved:"장부에 적어 뒀습니다. 번호를 잊어도 장부에서 찾을 수 있습니다.",
+  pinNotSaved:"장부에 적지 못했습니다. 이 번호를 따로 적어 두세요.",
+
+  /* 보내는 두 가지 길 */
+  twoWays:"보내는 길이 둘입니다",
+  way1:"카톡에 바로 보내기 (권함)",
+  way1sub:"사장님이 누를 게 없습니다. 카톡에서 그대로 읽습니다.",
+  way2:"예쁜 화면으로 보내기",
+  way2sub:"다섯 칸으로 나뉜 화면. 사장님이 복사·붙여넣기를 한 번 해야 합니다.",
+  copyDirect:"카톡에 바로 보낼 글 복사",
+  copyPretty:"예쁜 화면으로 보낼 글 복사",
+  copyFail:"복사가 막혔습니다",
+  sizeNote:"바로 보낼 글 {a}자 · 결과 코드 {b}자",
+
+  /* 장부 */
+  ledger:"장부",
+  ledgerCount:"{n}건이 적혀 있습니다",
+  ledgerNone:"아직 적힌 게 없습니다",
+  ledgerWhat:"결과를 만들 때마다 저절로 적힙니다. 이 컴퓨터 안에만 저장되고 인터넷으로 나가지 않습니다.",
+  ledgerEmptyHint:"운영실에서 결과를 한 번 만들면 여기에 나타납니다.",
+  ledgerItems:"적힌 것",
+  keyNo:"열쇠번호",
+  noLock:"잠기지 않은 건입니다",
+  noName:"이름 없음",
+  contactIs:"연락처",
+  againSend:"다시 보낼 글 복사",
+  openIt:"열어보기",
+  del:"지우기", delSure:"정말 지울까요? 한 번 더",
+  delDone:"한 건을 지웠습니다.",
+  openFail:"이 건을 열지 못했습니다.",
+  againMsg:"사장님, 아까 보내드린 제작안입니다.",
+
+  /* 백업 */
+  bkTitle:"백업",
+  bkDownload:"백업 파일 내려받기",
+  bkShow:"백업 글 보기 (확실한 방법)",
+  bkHide:"백업 글 접기",
+  bkCopy:"백업 글 복사",
+  bkHow:"복사한 뒤 메모장에 붙여넣고 저장해 두세요. 되살릴 때 아래 칸에 그대로 붙여넣으면 됩니다.",
+  bkWhere:"내려받기를 눌렀습니다. 파일이 안 보이면 아래 '백업 글 복사'를 쓰세요.",
+  bkEmpty:"아직 적힌 게 없습니다.",
+  bkRestore:"백업 되살리기",
+  bkPickFile:"내려받아 둔 백업 파일을 고르세요",
+  bkPastePh:"백업 파일 내용을 여기에 붙여넣어도 됩니다",
+  bkRestoreBtn:"붙여넣은 백업 되살리기",
+  bkNothing:"되살릴 내용이 비어 있습니다.",
+  bkUnread:"백업 내용을 읽지 못했습니다. 파일 내용을 통째로 붙여넣어 주세요.",
+  bkNotOurs:"길 장부 백업이 아닙니다.",
+  bkFull:"저장 공간이 부족해 되살리지 못했습니다. 오래된 건을 지우고 다시 해보세요.",
+  bkSame:"이미 다 들어 있는 내용입니다. 새로 들어온 건 없습니다.",
+  bkAdded:"{n}건을 되살렸습니다.",
+  bkFileFail:"파일을 읽지 못했습니다. 아래 칸에 내용을 붙여넣어 주세요.",
+
+  /* 연락처 안전 */
+  safeTitle1:"1:1 오픈채팅",
+  safeSub1:"들어오는 분마다 각자 다른 방. 서로의 대화를 볼 수 없고, 구경할 홈 화면도 없습니다.",
+  safeTitle2:"카카오톡 채널",
+  safeSub2:"대화는 1:1이라 안 보이지만, 채널 홈은 누구나 들어와 볼 수 있습니다.",
+  howOpen:"1:1 오픈채팅 만드는 법",
+  privOpen:"사장님만을 위해 따로 열리는 대화방입니다. 다른 사장님은 이 대화를 볼 수 없습니다.",
+  privChannel:"사장님과 저, 둘만 있는 대화방입니다. 다른 사장님은 이 대화를 볼 수 없습니다."
+},
+en:{
+  tagline:"We design your ad video for you",
+  start:"Request an ad", openResult:"Open a result", opRoom:"Studio",
+  back:"Back", next:"Next", copy:"Copy", copied:"Copied",
+  copyManual:"Text selected · Ctrl+C",
+  s1:"When do you need it?", s1sub:"Everything is free",
+  fast:"In 3 hours", d1:"In a day", d2:"In two days",
+  locked:"Not open yet", free:"Free",
+  fastNote:"Not taking requests right now",
+  d1Note:"Copy, structure and shot direction", d2Note:"Copy and hashtags",
+  allFree:"Every request is free right now.",
+  s2:"What are we announcing?",
+  s2sub:"Your shop, what you sell, what you are proud of",
+  ph:"e.g. A 12-year-old noodle shop. We boil the broth fresh every morning.",
+  len:"Video length", who:"How to reach you", whoPh:"Shop name / phone",
+  send:"Build my request",
+  s3:"Your request is ready", s3sub:"① Copy it ② send it to us below",
+  copySheet:"① Copy request", sheetDone:"Copied · now send it below",
+  waitNote:"We will send the result link within the promised time.",
+  newOne:"Start over",
+  sendTo:"② Send it here",
+  goKakao:"Open KakaoTalk", kakaoIdLabel:"KakaoTalk ID",
+  phoneLabel:"Text this number", sendSms:"Send a text",
+  emailLabel:"Email", sendMail:"Send an email",
+  noContact:"No destination set yet. Add a contact in the Studio.",
+  after:"③ What happens next",
+  st1:"We confirm", st1sub:"You get a message back from us",
+  st2:"We build it", st2sub:"Within the time you picked",
+  st3:"We send the result", st3sub:"One tap opens the full shooting script",
+  noPush:"A person answers, not a robot. Please give us a moment.",
+  reply:"Replies", replySub:"Copy and paste into KakaoTalk",
+  replyNote:"Edit freely — your edits are what gets copied.",
+  contact:"Contact", contactSub:"Shown to customers on the request screen",
+  cKakaoOpen:"KakaoTalk open chat link (recommended)", cKakaoOpenPh:"https://open.kakao.com/o/...",
+  cKakaoId:"KakaoTalk ID", cKakaoIdPh:"id",
+  cPhone:"Phone (public numbers attract spam)", cPhonePh:"010-0000-0000",
+  cEmail:"Email", cEmailPh:"name@example.com",
+  saveContact:"Save", contactSaved:"Saved",
+  contactWarn:"This is saved on this computer only. To show it to customers, put it in the file.",
+  copyLine:"Copy the line for the file",
+  s4:"Open a result", s4sub:"Tap the link we sent, or paste the result code here",
+  phCode:"Paste the result code", open:"Open it",
+  errCode:"Could not read that code. Paste exactly what you received.",
+  tabPlan:"Plan", tabScript:"Script", tabCaption:"Captions", tabShot:"Shot list", tabEdit:"Edit",
+  headlines:"Three headlines", cta:"Closing line", tags:"Hashtags",
+  captionAll:"Copy all captions", props:"Props", tips:"Shooting tips",
+  capcut:"Edit in CapCut", vllo:"Edit in VLLO",
+  download:"Download as text", saved:"Saved", errSave:"Could not save. Try again",
+  op:"Studio", opSub:"Customers never see this screen",
+  op1:"1 · Take the request", op1sub:"Paste the request you received",
+  phSheet:"Paste request", readSheet:"Read",
+  errSheet:"Could not read it. Paste the whole text starting with [길 신청서].",
+  op2:"2 · Send to Claude", op2sub:"Copy, paste into Claude, bring the answer back",
+  op3:"3 · Paste the answer", op3sub:"Paste Claude's full answer",
+  phAns:"Paste Claude's answer", makeLink:"Build what to send back",
+  errParse:"Could not read that. Paste Claude's full answer again.",
+  op4:"4 · Send it back", op4sub:"Send whichever is easier",
+  copyLink:"Copy result link", copyCode:"Copy result code", preview:"Preview it first",
+  linkLong:"The link is long and may be cut off in messengers. Send the code instead.",
+  exit:"Exit", sheetFrom:"Request",
+  reqTier:"Due", reqLen:"Length", reqWho:"Contact",
+
+  picked:"Picked",
+
+  stepStart:"Start", stepDue:"Due", stepAbout:"About", stepSend:"Request", stepResult:"Result",
+  lblCut:"Cut", lblShot:"Shot", lblCapt:"Caption", lblVoice:"Voice",
+
+  pinLabel:"4-digit key",
+  pinHelp:"The 4 digits we sent you along with this. It keeps others from opening your plan.",
+  pinNeed:"Please enter the 4-digit key.",
+  pinWrong:"That key does not match. Check the 4 digits we sent you.",
+  pasteWhole:"You can paste the whole message you received. We will find the code in it.",
+  thisPin:"Key for this result",
+  pinWhy:"Even if the code leaks, it will not open without this number. 'Copy message with the code' includes it automatically.",
+  pinSaved:"Saved to the ledger. You can look the number up later.",
+  pinNotSaved:"Could not save to the ledger. Write this number down.",
+
+  twoWays:"Two ways to send it",
+  way1:"Send it straight to KakaoTalk (recommended)",
+  way1sub:"Nothing for them to tap. They read it right in the chat.",
+  way2:"Send the code for the full screen",
+  way2sub:"Five tabs. They copy and paste once to open it.",
+  copyDirect:"Copy the message to send",
+  copyPretty:"Copy message with the code",
+  copyFail:"Copying was blocked",
+  sizeNote:"Message {a} chars · code {b} chars",
+
+  ledger:"Ledger",
+  ledgerCount:"{n} entries",
+  ledgerNone:"Nothing here yet",
+  ledgerWhat:"Every result you build is recorded here automatically. It stays on this computer and never leaves it.",
+  ledgerEmptyHint:"Build one result in the Studio and it will show up here.",
+  ledgerItems:"Entries",
+  keyNo:"Key",
+  noLock:"Not locked",
+  noName:"No name",
+  contactIs:"Contact",
+  againSend:"Copy message again",
+  openIt:"Open it",
+  del:"Delete", delSure:"Delete for real? Tap again",
+  delDone:"One entry deleted.",
+  openFail:"Could not open that entry.",
+  againMsg:"Here is the plan we sent you earlier.",
+
+  bkTitle:"Backup",
+  bkDownload:"Download backup file",
+  bkShow:"Show backup text (always works)",
+  bkHide:"Hide backup text",
+  bkCopy:"Copy backup text",
+  bkHow:"Paste it into a text file and save it. To restore, paste it back into the box below.",
+  bkWhere:"Download started. If you cannot find the file, use 'Copy backup text' below.",
+  bkEmpty:"Nothing to back up yet.",
+  bkRestore:"Restore a backup",
+  bkPickFile:"Choose a backup file you saved",
+  bkPastePh:"Or paste the backup text here",
+  bkRestoreBtn:"Restore what I pasted",
+  bkNothing:"There is nothing to restore.",
+  bkUnread:"Could not read that backup. Paste the whole file content.",
+  bkNotOurs:"That is not a 길 ledger backup.",
+  bkFull:"Not enough storage to restore. Delete old entries and try again.",
+  bkSame:"All of it is already here. Nothing new was added.",
+  bkAdded:"Restored {n} entries.",
+  bkFileFail:"Could not read the file. Paste its contents in the box below.",
+
+  safeTitle1:"1:1 open chat",
+  safeSub1:"Each person gets their own room. Nobody sees anyone else's chat, and there is no home page to browse.",
+  safeTitle2:"KakaoTalk channel",
+  safeSub2:"Chats are 1:1 and private, but the channel home page is open to anyone.",
+  howOpen:"How to make a 1:1 open chat",
+  privOpen:"This room opens just for you. No other shop owner can see this conversation.",
+  privChannel:"Just you and me in this room. No other shop owner can see this conversation."
+}};
+function t(k){ return T[S.lang][k]; }
+/* 낱말 안의 {a} {b} {n} 자리에 값을 끼워 넣습니다 */
+function tf(k, vals){
+  var s = t(k);
+  Object.keys(vals || {}).forEach(function(x){
+    s = s.split("{" + x + "}").join(String(vals[x]));
+  });
+  return s;
+}
+
+/* =========================================================
+   2) 상태
+   ========================================================= */
+/* =========================================================
+   ★ 여기만 채우면 됩니다 — 사장님이 신청서를 보낼 곳 ★
+
+   [어느 것이 남에게 덜 보이나]
+
+   ① 1:1 오픈채팅  — 가장 안전합니다.
+      들어오는 사람마다 각자 다른 방이 열립니다. 서로의 대화를 볼 수 없습니다.
+      구경만 할 수 있는 '홈 화면'이 없어서 남이 기웃거릴 곳도 없습니다.
+      내 실명·전화번호도 드러나지 않습니다.
+      만드는 법: 카카오톡 → 채팅 → 오픈채팅 → + → 1:1 채팅방 만들기 → 링크 복사
+
+   ② 카카오톡 채널 — 대화 자체는 1:1이라 남이 볼 수 없습니다.
+      다만 '채널 홈'이 공개라 누구나 들어와 게시글과 친구 수를 볼 수 있습니다.
+      대화 내용은 절대 안 보입니다.
+
+   ③ 전화번호 — 공개하면 스팸이 옵니다. 꼭 필요할 때만 쓰세요.
+
+   빈 칸("")으로 두면 그 줄은 화면에 아예 나오지 않습니다.
+   ========================================================= */
+var CONTACT_DEFAULT = {
+  // 지금은 카카오톡 채널 「road」를 씁니다. 끝을 /chat 으로 둡니다.
+  // /friend 는 친구추가 화면으로 가고, /chat 은 채팅창이 바로 열려
+  // 사장님이 복사한 신청서를 그 자리에서 붙여넣을 수 있습니다.
+  //
+  // 채널 홈을 남에게 보이고 싶지 않다면, 1:1 오픈채팅 링크를 만들어
+  // 이 줄을 그 링크로 바꾸면 됩니다. 운영실 → 연락처 에서도 바꿀 수 있습니다.
+  kakaoOpen : "https://pf.kakao.com/_uUxbBX/chat",
+  kakaoId   : "",
+  phone     : "",
+  email     : ""
+};
+var CKEY = "gil.contact";
+
+/* =========================================================
+   ★ 이 사이트의 '진짜 주소' ★
+
+   결과 링크는 "사이트 주소 + #r=암호코드" 로 만듭니다.
+   그런데 클로드 아티팩트처럼 액자(iframe) 안에서 열리는 곳에서는
+   화면 스스로 바깥 주소를 알아낼 방법이 없습니다.
+   그래서 여기에 손으로 적어 둡니다.
+
+   - 비워 두면("") 결과 링크 버튼이 아예 안 나옵니다. 결과 코드만 씁니다.
+   - 나중에 깃허브 페이지·넷리파이 같은 곳에 올리면
+     그때 주소를 여기에 적으세요. 그 순간부터 링크가 살아납니다.
+     예) 내이름.github.io/gil/ 를 쓴다면 그 주소를 그대로 적으면 됩니다
+   ========================================================= */
+var SITE_URL = "https://han7750.github.io/gil/";
+
+/* 액자 안에서 열렸는지 확인합니다.
+   액자 안이면 바깥 주소의 # 뒷부분이 전달되지 않아 링크 방식을 못 씁니다. */
+function inFrame(){
+  try{ return window.self !== window.top; }catch(e){ return true; }
+}
+/* 결과 링크에 쓸 바탕 주소를 정합니다. 못 정하면 빈 칸을 돌려줍니다. */
+function siteBase(){
+  if(SITE_URL) return SITE_URL.replace(/#.*$/,"");
+  if(inFrame()) return "";                      // 액자 안 → 링크 못 만듦
+  try{ return location.origin + location.pathname; }catch(e){ return ""; }
+}
+
+/* 이 컴퓨터에 따로 저장해 둔 값이 있으면 그것을 쓰고,
+   비어 있는 칸은 위에 적어 둔 기본값으로 채웁니다.
+   → 운영실에서 실수로 빈 칸을 저장해도 사장님 화면의 연락처가 사라지지 않습니다. */
+function loadContact(){
+  var d = null;
+  try{ d = JSON.parse(localStorage.getItem(CKEY) || "null"); }catch(e){}
+  var pick = function(k){ return (d && d[k]) ? d[k] : (CONTACT_DEFAULT[k] || ""); };
+  return { kakaoOpen:pick("kakaoOpen"), kakaoId:pick("kakaoId"),
+           phone:pick("phone"), email:pick("email") };
+}
+function saveContact(){ try{ localStorage.setItem(CKEY, JSON.stringify(C)); }catch(e){} }
+var C = loadContact();
+function hasContact(){ return !!(C.kakaoOpen || C.kakaoId || C.phone || C.email); }
+
+/* 넣은 링크가 어느 쪽인지 알아봅니다.
+   둘 다 대화는 1:1이지만, 채널은 누구나 들어와 볼 수 있는 '홈 화면'이 딸려 옵니다. */
+function kakaoKind(url){
+  var u = String(url || "");
+  if(/open\.kakao\.com/i.test(u)) return "open";
+  if(/pf\.kakao\.com/i.test(u))   return "channel";
+  if(!u) return "none";
+  return "other";
+}
+/* 어느 쪽인지 알려주는 말. 화면 말이 바뀌면 여기도 함께 바뀝니다. */
+function kakaoNote(kind){
+  var en = S.lang === "en";
+  if(kind === "open") return { safe:true,
+    label: en ? "1:1 open chat" : "1:1 오픈채팅",
+    say  : en ? "The safest choice. Each person gets their own room, and there is no home page for anyone to browse."
+              : "가장 안전합니다. 들어오는 분마다 각자 다른 방이 열려 서로의 대화를 볼 수 없고, 구경할 홈 화면도 없습니다." };
+  if(kind === "channel") return { safe:false,
+    label: en ? "KakaoTalk channel" : "카카오톡 채널",
+    say  : en ? "Chats stay 1:1 and private, but the channel home page is open — anyone can see your posts and follower count."
+              : "대화는 1:1이라 다른 사장님이 볼 수 없습니다. 다만 채널 홈은 공개라 누구나 들어와 게시글과 친구 수를 볼 수 있습니다." };
+  if(kind === "other") return { safe:false,
+    label: en ? "Unknown link" : "알 수 없는 링크",
+    say  : en ? "That is not a KakaoTalk address. Check for yourself who can see it."
+              : "카카오톡 주소가 아닙니다. 누가 볼 수 있는 곳인지 직접 확인해 주세요." };
+  return { safe:false, label: en ? "None" : "없음", say:"" };
+}
+
+/* =========================================================
+   장부 — 누구에게 무엇을 보냈는지, 열쇠번호가 몇 번이었는지 적어 둡니다
+
+   왜 필요한가:
+   열쇠번호는 결과를 만들 때 한 번 나오고 화면을 나가면 사라집니다.
+   사장님이 "번호를 잃어버렸다"고 하시면 알려드릴 방법이 없어집니다.
+   그래서 만들 때마다 자동으로 적어 둡니다.
+
+   어디에 저장되나:
+   이 컴퓨터의 브라우저 안에만 저장됩니다. 인터넷으로 나가지 않습니다.
+   브라우저 기록을 지우면 함께 사라지므로, 가끔 백업 파일을 내려받아 두세요.
+   ========================================================= */
+/* 고른 말(한국어/영어)을 기억합니다.
+   외국인 사장님이 다시 들어왔을 때 또 EN 을 누르게 하면 안 됩니다. */
+var GKEY = "gil.lang";
+function loadLang(){
+  try{
+    var v = localStorage.getItem(GKEY);
+    if(v === "ko" || v === "en") return v;
+  }catch(e){}
+  /* 저장된 게 없으면 브라우저 말을 따릅니다. 한국어가 아니면 영어로 엽니다. */
+  try{
+    var nav = (navigator.language || "").toLowerCase();
+    if(nav && nav.indexOf("ko") !== 0) return "en";
+  }catch(e){}
+  return "ko";
+}
+function saveLang(){ try{ localStorage.setItem(GKEY, S.lang); }catch(e){} }
+
+var LKEY = "gil.ledger";
+var LEDGER_MAX = 300;              // 너무 쌓이면 저장 공간이 넘칩니다
+
+function loadLedger(){
+  try{
+    var a = JSON.parse(localStorage.getItem(LKEY) || "[]");
+    return Array.isArray(a) ? a : [];
+  }catch(e){ return []; }
+}
+function saveLedger(list){
+  try{ localStorage.setItem(LKEY, JSON.stringify(list)); return true; }
+  catch(e){ return false; }        // 저장 공간이 꽉 찼을 때
+}
+/* 새 건을 맨 위에 넣습니다. 저장에 실패하면 false 를 돌려줍니다. */
+function addLedger(rec){
+  var list = loadLedger();
+  list.unshift(rec);
+  if(list.length > LEDGER_MAX) list = list.slice(0, LEDGER_MAX);
+  return saveLedger(list);
+}
+function removeLedger(id){
+  return saveLedger(loadLedger().filter(function(x){ return x.id !== id; }));
+}
+/* 백업을 불러올 때 씁니다. 같은 건은 한 번만 들어갑니다. */
+function mergeLedger(incoming){
+  var now = loadLedger(), seen = {}, out = [];
+  now.forEach(function(x){ seen[x.id] = true; });
+  var added = 0;
+  incoming.forEach(function(x){
+    if(!x || !x.id || seen[x.id]) return;
+    seen[x.id] = true; now.push(x); added++;
+  });
+  now.sort(function(a,b){ return (b.at || 0) - (a.at || 0); });
+  out = now.slice(0, LEDGER_MAX);
+  return saveLedger(out) ? added : -1;
+}
+/* 날짜를 사람이 읽는 말로 바꿉니다 */
+function whenText(ms){
+  var d = new Date(ms || 0);
+  if(isNaN(d.getTime())) return "날짜 모름";
+  var h24 = d.getHours();
+  var ampm = h24 < 12 ? "오전" : "오후";
+  var h12 = h24 % 12; if(h12 === 0) h12 = 12;
+  var mm = String(d.getMinutes());
+  if(mm.length < 2) mm = "0" + mm;
+  return (d.getMonth()+1) + "월 " + d.getDate() + "일 " + ampm + " " + h12 + ":" + mm;
+}
+function newId(){
+  return String(Date.now()) + "-" + Math.floor(Math.random() * 100000);
+}
+
+var S = {
+  lang:"ko", screen:"intro",   // lang 은 아래 boot 에서 기억해 둔 값으로 바꿉니다
+  tier:null, sec:"30", brief:"", who:"",          // 사장님이 적는 것
+  sheet:"", req:null, prompt:"", raw:"",          // 운영실이 다루는 것
+  result:null, link:"", code:"", tab:"plan", err:"",
+  pin:"",            // 결과를 잠근 열쇠번호 4자리 (운영실이 뽑고, 사장님이 넣습니다)
+  askPin:false,      // 결과 여는 화면에서 열쇠번호 칸을 보여줄지
+  ledgerOk:true,     // 방금 만든 건이 장부에 잘 적혔는지
+  ledgerMsg:"",      // 장부 화면에 띄울 알림
+  restore:"",        // 백업 글을 붙여넣는 칸
+  showBackup:false   // 백업 글을 화면에 펼쳐 보여줄지
+};
+
+/* locked:true 인 등급은 화면에서 고를 수 없습니다.
+   지금은 유료 등급을 열지 않습니다. 소득이 생기면 건강보험 피부양자 자격이
+   바로 사라지기 때문에, 그 준비가 될 때까지 잠가 둡니다.
+   다시 열 때는 아래 locked 를 false 로만 바꾸면 됩니다. */
+var TIERS = {
+  fast:{ label:"3시간", en:"3 hours", locked:true,
+         depth:"가장 정교하게. 컷마다 카메라 각도와 손에 잡히는 촬영 지시까지 구체적으로.",
+         depthEn:"Most detailed. Give a camera angle and a hands-on shooting direction for every cut." },
+  d1:  { label:"1일",   en:"1 day",   locked:false,
+         depth:"정교하게. 컷마다 카메라 각도와 손에 잡히는 촬영 지시까지 구체적으로.",
+         depthEn:"Detailed. Give a camera angle and a hands-on shooting direction for every cut." },
+  d2:  { label:"2일",   en:"2 days",  locked:false,
+         depth:"간결하게. 핵심 광고 문구와 해시태그 중심으로, 컷은 짧게.",
+         depthEn:"Concise. Focus on the headline copy and hashtags; keep the cuts short." }
+};
+/* 납기 이름을 지금 화면 말로 돌려줍니다 */
+function tierLabel(id){
+  var T2 = TIERS[id];
+  if(!T2) return id || "-";
+  return S.lang === "en" ? T2.en : T2.label;
+}
+
+/* =========================================================
+   영상 길이 — 고를 수 있는 것들
+
+   v     : 초 단위. 신청서와 지시문에는 이 숫자가 들어갑니다.
+   ko/en : 화면과 신청서에 보이는 말. 60초보다 '1분'이 읽기 편합니다.
+   cuts  : 그 길이에 알맞은 컷 개수. 대략 6~7초에 한 컷씩입니다.
+           너무 잘게 쪼개면 사장님이 찍다가 지칩니다.
+   ========================================================= */
+var LENGTHS = [
+  { v:"30", ko:"30초",     en:"30 sec", cuts:5  },
+  { v:"40", ko:"40초",     en:"40 sec", cuts:6  },
+  { v:"50", ko:"50초",     en:"50 sec", cuts:7  },
+  { v:"60", ko:"1분",      en:"1 min",  cuts:8  },
+  { v:"75", ko:"1분 15초", en:"1:15",   cuts:10 },
+  { v:"90", ko:"1분 30초", en:"1:30",   cuts:12 }
+];
+function lenOf(sec){
+  var s = String(sec || "");
+  for(var i=0;i<LENGTHS.length;i++) if(LENGTHS[i].v === s) return LENGTHS[i];
+  return LENGTHS[0];
+}
+/* 화면에 보일 말 (한국어/영어) */
+function lenLabel(sec){ var L = lenOf(sec); return S.lang === "en" ? L.en : L.ko; }
+/* 신청서에 적을 말. 숫자를 앞에 둬야 나중에 다시 읽어낼 수 있습니다.
+   예) "60초 (1분)" → 60 을 집어냅니다. */
+function lenSheet(sec){
+  var L = lenOf(sec);
+  if(S.lang === "en") return L.v + " sec (" + L.en + ")";
+  return L.ko === (L.v + "초") ? (L.v + "초") : (L.v + "초 (" + L.ko + ")");
+}
+
+/* =========================================================
+   답장 문구 모음
+   1:1 오픈채팅에는 자동응답이 없습니다. 그래서 사람이 손으로 답해야 하는데,
+   매번 새로 쓰면 늦어지고 말투도 흔들립니다. 미리 써 두고 복사만 합니다.
+   {납기} 자리에는 사장님이 고른 납기가 자동으로 들어갑니다.
+   ========================================================= */
+var REPLIES = [
+  { k:"접수 확인",
+    w:"언제 : 신청서를 받은 직후. 5분 안에 보내면 가장 좋습니다.",
+    m:"안녕하세요, 길입니다.\n신청서 잘 받았습니다.\n\n{납기} 안에 촬영 대본까지 만들어서 링크로 보내드릴게요.\n조금만 기다려 주세요." },
+
+  { k:"밤에 받았을 때",
+    w:"언제 : 밤 11시 ~ 아침 7시 사이에 신청이 들어왔을 때.",
+    m:"안녕하세요, 길입니다.\n신청서 잘 받았습니다.\n\n지금은 늦은 시간이라 내일 아침에 바로 시작하겠습니다.\n{납기} 안에 보내드릴게요." },
+
+  { k:"완성해서 보낼 때",
+    w:"언제 : 결과를 보낼 때. 보통은 이 문구 대신 4단계의 '카톡에 바로 보낼 글 복사'를 쓰면 됩니다.",
+    m:"사장님, 광고 영상 제작안 다 됐습니다.\n\n\n\n기획 · 대본 · 자막 · 촬영 목록 · 편집 순서로 정리했습니다.\n'편집' 부분을 보시면 캡컷으로 만드는 차례가 그대로 나와 있어요.\n\n보시고 고치고 싶은 데 있으면 편하게 말씀해 주세요." },
+
+  { k:"돈을 주려고 하실 때",
+    w:"언제 : 사례를 주시려 할 때. 받으면 건강보험 피부양자 자격이 사라집니다.",
+    m:"마음만 감사히 받겠습니다.\n지금은 실력을 쌓는 중이라 돈은 받지 않고 있어요.\n\n대신 만드신 영상 한 번 보여주시면\n그게 저한테는 제일 큰 도움이 됩니다." },
+
+  { k:"고쳐달라고 하실 때",
+    w:"언제 : 결과가 마음에 안 든다고 하실 때.",
+    m:"말씀해 주셔서 감사합니다.\n바로 고쳐서 다시 보내드릴게요.\n\n어느 부분이 마음에 안 드셨는지 한 줄만 더 알려주시면\n정확하게 고칠 수 있습니다." },
+
+  { k:"후기 부탁드릴 때",
+    w:"언제 : 영상이 잘 나왔다고 하실 때. 돈 대신 받는 것입니다.",
+    m:"영상 잘 나왔다니 다행입니다.\n\n혹시 한 줄만 후기 남겨주실 수 있을까요?\n'어떤 점이 도움이 됐다' 정도면 충분합니다.\n다음 사장님께 보여드릴 때 큰 힘이 됩니다." }
+];
+
+/* =========================================================
+   3) 신청서 — 사람이 읽을 수 있는 글로 만든다 (카톡으로 보내야 하므로)
+   ========================================================= */
+function buildSheet(){
+  if(S.lang === "en"){
+    return [
+      "[GIL REQUEST]",
+      "Due: " + TIERS[S.tier].en,
+      "Length: " + lenSheet(S.sec),
+      "Contact: " + (S.who || "-"),
+      "About:",
+      S.brief.trim()
+    ].join("\n");
+  }
+  return [
+    "[길 신청서]",
+    "납기: " + TIERS[S.tier].label,
+    "길이: " + lenSheet(S.sec),
+    "연락처: " + (S.who || "-"),
+    "설명:",
+    S.brief.trim()
+  ].join("\n");
+}
+
+/* 한국어 신청서와 영어 신청서를 둘 다 읽어냅니다.
+   외국인 사장님이 보낸 신청서인지 여기서 알아내고, 그 사실을 lang 에 담아
+   클로드 지시문과 결과 글까지 같은 말로 나가게 합니다. */
+function readSheet(text){
+  var s = String(text || "");
+  var en = s.indexOf("[GIL REQUEST]") >= 0;
+  if(!en && s.indexOf("[길 신청서]") < 0) return null;
+
+  var get = function(re){ var m = s.match(re); return m ? m[1].trim() : ""; };
+  var due = en ? get(/Due:\s*(.+)/) : get(/납기:\s*(.+)/);
+  var tier = /3시간|3 hour/i.test(due) ? "fast"
+           : (/1일|1 day/i.test(due) ? "d1" : "d2");
+
+  /* "길이: 60초 (1분)" / "Length: 60 sec (1 min)" 에서 60 을 집어냅니다.
+     목록에 없는 숫자가 오면 가장 가까운 길이로 맞춥니다. */
+  var raw = (en ? get(/Length:\s*(\d+)/) : get(/길이:\s*(\d+)/)) || "30";
+  var sec = lenOf(raw).v;
+  if(sec !== raw){
+    var n = Number(raw), best = LENGTHS[0], gap = Infinity;
+    LENGTHS.forEach(function(L){
+      var d = Math.abs(Number(L.v) - n);
+      if(d < gap){ gap = d; best = L; }
+    });
+    sec = best.v;
+  }
+
+  var who = en ? get(/Contact:\s*(.+)/) : get(/연락처:\s*(.+)/);
+  var mark = en ? "About:" : "설명:";
+  var bi = s.indexOf(mark);
+  var brief = bi < 0 ? "" : s.slice(bi + mark.length).trim();
+  if(!brief) return null;
+  return { tier:tier, sec:sec, who:who, brief:brief, lang:(en ? "en" : "ko") };
+}
+
+/* =========================================================
+   4) 클로드에게 보낼 지시문
+   ========================================================= */
+function buildPrompt(req){
+  var cuts = lenOf(req.sec).cuts;
+
+  /* 영어로 신청하신 분에게는 결과도 영어로 나가야 합니다.
+     지시문 자체를 영어로 써야 클로드가 영어로 답합니다. */
+  if(req.lang === "en"){
+    return [
+"You are an advertising planner for small local businesses.",
+"Read the shop owner's description below and build a short ad video plan",
+"they can make right away with a free editing app like CapCut or VLLO.",
+"",
+"Depth: " + TIERS[req.tier].depthEn,
+"Video length: " + req.sec + " seconds",
+"",
+"Owner's description:",
+req.brief,
+"",
+"Output exactly one JSON object. No greeting, no explanation, no code fences.",
+"",
+"{",
+'  "brandLine": "one line that defines this shop",',
+'  "headlines": ["headline 1","headline 2","headline 3"],',
+'  "storyboard": [',
+'    {"time":"0-3 sec","visual":"what is on screen","shot":"how to hold the camera","caption":"on-screen caption","voice":"spoken line (empty string if none)"}',
+"  ],",
+'  "props": ["things to prepare"],',
+'  "shootTips": ["shooting tips"],',
+'  "edit": { "capcut": ["steps in CapCut"], "vllo": ["steps in VLLO"] },',
+'  "hashtags": ["#tag"],',
+'  "cta": "one closing sentence"',
+"}",
+"",
+"Rules:",
+"- storyboard must be exactly " + cuts + " cuts, totalling " + req.sec + " seconds.",
+"- caption must be under 30 characters, readable at a glance.",
+"- shot must be something they can follow immediately: 'close up / wide / from above / slow pan / locked off'.",
+"- props: at most 6, only things the shop is likely to already have.",
+"- edit.capcut and edit.vllo: at most 6 lines each, in the order they tap them.",
+"- shootTips: exactly 3. hashtags: at most 6.",
+"- Never use superlatives (best, number one, only, cheapest).",
+"- Never claim health or performance effects without evidence.",
+"- Keep every sentence short and concrete.",
+"- Write everything in English."
+    ].join("\n");
+  }
+
+  return [
+"당신은 한국 소상공인 전문 광고 기획자입니다.",
+"아래 사장님 설명을 읽고, 캡컷이나 블로 같은 무료 편집 앱으로 바로 만들 수 있는",
+"짧은 광고 영상 제작안을 만들어 주세요.",
+"",
+"작업 수준: " + TIERS[req.tier].depth,
+"영상 길이: " + req.sec + "초",
+"",
+"사장님 설명:",
+req.brief,
+"",
+"아래 JSON 하나만 출력하세요. 인사말·설명·코드블록 표시는 넣지 마세요.",
+"",
+"{",
+'  "brandLine": "이 가게를 한 줄로 정의",',
+'  "headlines": ["광고문구1","광고문구2","광고문구3"],',
+'  "storyboard": [',
+'    {"time":"0-3초","visual":"화면에 보이는 것","shot":"카메라를 어떻게 두는지","caption":"화면에 뜨는 자막","voice":"말소리 대사 (없으면 빈 문자열)"}',
+"  ],",
+'  "props": ["준비물"],',
+'  "shootTips": ["촬영 요령"],',
+'  "edit": { "capcut": ["캡컷에서 할 일"], "vllo": ["블로에서 할 일"] },',
+'  "hashtags": ["#태그"],',
+'  "cta": "마지막에 띄울 한 문장"',
+"}",
+"",
+"규칙:",
+"- storyboard는 정확히 " + cuts + "컷, 시간 합계 " + req.sec + "초.",
+"- caption은 16자 이내. 화면에서 한눈에 읽히는 말로.",
+"- shot에는 '가까이 / 멀리 / 위에서 / 천천히 옆으로 / 고정' 처럼 바로 따라 할 수 있는 지시를 쓰세요.",
+"- props는 가게에 이미 있을 법한 것만 6개 이내.",
+"- edit의 capcut·vllo는 각각 앱 안에서 누를 것을 순서대로 6줄 이내.",
+"- shootTips는 3개. hashtags는 6개 이내.",
+"- 과장 표현(최고, 1등, 유일, 최저가)은 쓰지 마세요.",
+"- 근거 없는 효능·효과 표현은 쓰지 마세요.",
+"- 모든 문장은 짧고 구체적으로."
+  ].join("\n");
+}
+
+function parseResult(text){
+  var s = String(text || "").replace(/```json/gi,"").replace(/```/g,"").trim();
+  var a = s.indexOf("{"), b = s.lastIndexOf("}");
+  if(a < 0 || b < 0) return null;
+  var o;
+  try{ o = JSON.parse(s.slice(a, b+1)); }catch(e){ return null; }
+  if(!o || !o.storyboard || !o.storyboard.length) return null;
+  o.brandLine = o.brandLine || ""; o.headlines = o.headlines || [];
+  o.props = o.props || []; o.shootTips = o.shootTips || [];
+  o.hashtags = o.hashtags || []; o.cta = o.cta || "";
+  o.edit = o.edit || {}; o.edit.capcut = o.edit.capcut || []; o.edit.vllo = o.edit.vllo || [];
+  o.storyboard.forEach(function(c){
+    c.time = c.time || ""; c.visual = c.visual || "";
+    c.shot = c.shot || ""; c.caption = c.caption || ""; c.voice = c.voice || "";
+  });
+  return o;
+}
+
+/* 나중에 서버를 붙이면 이 함수만 채우면 됩니다.
+   그때 운영실 2·3단계가 사라지고 사장님 화면은 그대로 씁니다. */
+function callClaude(){ return null; }
+
+/* =========================================================
+   5) 결과를 링크·코드로 바꾸기
+      브라우저에 내장된 압축을 쓰고, 없으면 그냥 담습니다.
+   ========================================================= */
+function b64url(bytes){
+  var s = "";
+  for(var i=0;i<bytes.length;i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function unb64url(str){
+  var s = String(str).replace(/-/g,"+").replace(/_/g,"/");
+  while(s.length % 4) s += "=";
+  var bin = atob(s), out = new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+/* 결과를 작게 줄입니다. 줄이면 코드가 짧아져 카톡에서 잘릴 위험이 줄어듭니다.
+   앞에 한 글자를 붙여 '줄였는지(z)' '그냥 담았는지(p)' 표시해 둡니다. */
+function squeeze(obj){
+  var bytes = new TextEncoder().encode(JSON.stringify(obj));
+  if(window.CompressionStream){
+    try{
+      var st = new Blob([bytes]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+      return new Response(st).arrayBuffer().then(function(buf){
+        return { flag:"z", bytes:new Uint8Array(buf) };
+      }).catch(function(){ return { flag:"p", bytes:bytes }; });
+    }catch(e){}
+  }
+  return Promise.resolve({ flag:"p", bytes:bytes });
+}
+function unsqueeze(flag, bytes){
+  var toObj = function(u8){
+    try{ return JSON.parse(new TextDecoder().decode(u8)); }catch(e){ return null; }
+  };
+  if(flag === "z" && window.DecompressionStream){
+    try{
+      var st = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+      return new Response(st).arrayBuffer()
+        .then(function(buf){ return toObj(new Uint8Array(buf)); })
+        .catch(function(){ return null; });
+    }catch(e){ return Promise.resolve(null); }
+  }
+  if(flag === "p") return Promise.resolve(toObj(bytes));
+  return Promise.resolve(null);
+}
+
+/* =========================================================
+   자물쇠 — 열쇠번호 4자리로 결과를 잠급니다
+
+   왜 필요한가:
+   결과 코드는 그 자체로 내용을 다 담고 있습니다.
+   잠그지 않으면 코드를 주운 사람이 사장님 가게 이야기를 그대로 볼 수 있습니다.
+   열쇠번호는 코드와 따로 카톡으로 알려주므로, 코드만 새어 나가면 열리지 않습니다.
+
+   브라우저에 원래 들어 있는 잠금 기능(AES-GCM)을 씁니다.
+   열쇠번호를 20만 번 반복해 늘려 두기 때문에, 숫자를 하나씩 넣어보는 방법도 매우 느립니다.
+   ========================================================= */
+var LOCK_ROUNDS = 200000;
+function hasCrypto(){
+  return !!(window.crypto && window.crypto.subtle && window.crypto.getRandomValues);
+}
+/* 열쇠번호를 진짜 열쇠로 바꿉니다. salt 는 매번 달라지는 소금 같은 값입니다. */
+function makeKey(pin, salt, use){
+  var raw = new TextEncoder().encode("길:" + String(pin));
+  return crypto.subtle.importKey("raw", raw, "PBKDF2", false, ["deriveKey"])
+    .then(function(base){
+      return crypto.subtle.deriveKey(
+        { name:"PBKDF2", salt:salt, iterations:LOCK_ROUNDS, hash:"SHA-256" },
+        base, { name:"AES-GCM", length:256 }, false, use);
+    });
+}
+function lockBytes(flag, bytes, pin){
+  var salt = crypto.getRandomValues(new Uint8Array(16));
+  var iv   = crypto.getRandomValues(new Uint8Array(12));
+  var body = new Uint8Array(1 + bytes.length);
+  body[0] = flag.charCodeAt(0);              // 줄였는지 여부도 함께 잠급니다
+  body.set(bytes, 1);
+  return makeKey(pin, salt, ["encrypt"]).then(function(k){
+    return crypto.subtle.encrypt({ name:"AES-GCM", iv:iv }, k, body);
+  }).then(function(buf){
+    var enc = new Uint8Array(buf);
+    var out = new Uint8Array(16 + 12 + enc.length);
+    out.set(salt, 0); out.set(iv, 16); out.set(enc, 28);
+    return "k" + b64url(out);
+  });
+}
+function unlockBytes(all, pin){
+  if(all.length < 29) return Promise.resolve(null);
+  var salt = all.slice(0, 16), iv = all.slice(16, 28), data = all.slice(28);
+  return makeKey(pin, salt, ["decrypt"]).then(function(k){
+    return crypto.subtle.decrypt({ name:"AES-GCM", iv:iv }, k, data);
+  }).then(function(buf){
+    var u8 = new Uint8Array(buf);
+    return unsqueeze(String.fromCharCode(u8[0]), u8.slice(1));
+  }).catch(function(){ return null; });     // 열쇠번호가 틀리면 여기로 옵니다
+}
+
+/* 열쇠번호 4자리를 새로 뽑습니다. 0으로 시작하지 않게 1000~9999 사이로 만듭니다. */
+function newPin(){
+  if(hasCrypto()){
+    var a = new Uint32Array(1);
+    crypto.getRandomValues(a);
+    return String(1000 + (a[0] % 9000));
+  }
+  return String(1000 + Math.floor(Math.random() * 9000));
+}
+
+/* pin 을 주면 잠근 코드("k..."), 안 주면 예전처럼 그냥 코드("z.../p...")를 만듭니다. */
+function pack(obj, pin){
+  return squeeze(obj).then(function(r){
+    if(pin && hasCrypto()) return lockBytes(r.flag, r.bytes, pin);
+    return r.flag + b64url(r.bytes);
+  });
+}
+/* 붙여넣은 글에서 코드 덩어리만 골라냅니다.
+   카톡 안내문까지 통째로 붙여넣는 일이 아주 흔하기 때문입니다. */
+function pickCode(text){
+  var s = String(text || "").trim();
+  var i = s.lastIndexOf("#r=");            // 링크를 통째로 붙여넣어도 읽어냅니다
+  if(i >= 0) s = s.slice(i + 3);
+  s = s.replace(/\s+/g,"");                // 줄바꿈·띄어쓰기는 지웁니다
+  if(/^[zpk][A-Za-z0-9_-]+$/.test(s)) return s;
+  var found = s.match(/[zpk][A-Za-z0-9_-]{40,}/g);
+  if(!found) return "";
+  return found.sort(function(a,b){ return b.length - a.length; })[0];
+}
+/* 잠긴 코드인지(열쇠번호가 필요한지) 미리 알아봅니다 */
+function isLocked(text){ return pickCode(text).charAt(0) === "k"; }
+
+/* 결과를 돌려주거나, 못 열면 왜 못 열었는지 알려줍니다.
+   { ok:결과 } 또는 { need:"pin" } 또는 { bad:"pin" } 또는 { bad:"code" } */
+function unpack(text, pin){
+  var s = pickCode(text);
+  if(!s) return Promise.resolve({ bad:"code" });
+  var kind = s.charAt(0), bytes;
+  try{ bytes = unb64url(s.slice(1)); }catch(e){ return Promise.resolve({ bad:"code" }); }
+
+  if(kind === "k"){
+    if(!hasCrypto()) return Promise.resolve({ bad:"code" });
+    if(!pin) return Promise.resolve({ need:"pin" });
+    return unlockBytes(bytes, pin).then(function(o){
+      return (o && o.storyboard) ? { ok:o } : { bad:"pin" };
+    });
+  }
+  return unsqueeze(kind, bytes).then(function(o){
+    return (o && o.storyboard) ? { ok:o } : { bad:"code" };
+  });
+}
+
+/* =========================================================
+   6) 도구
+   ========================================================= */
+function h(tag, attrs, kids){
+  var e = document.createElement(tag);
+  if(attrs) Object.keys(attrs).forEach(function(k){
+    if(k === "text") e.textContent = attrs[k];
+    else if(k === "cls") e.className = attrs[k];
+    else if(k === "on") Object.keys(attrs.on).forEach(function(ev){ e.addEventListener(ev, attrs.on[ev]); });
+    /* aria- 로 시작하는 것은 "true" / "false" 라는 글자를 그대로 넣어야 합니다.
+       빈 값으로 넣으면 화면 꾸미는 규칙([aria-pressed="true"])과 안 맞아
+       눌러도 선택 표시가 나지 않습니다. */
+    else if(k.indexOf("aria-") === 0){ if(attrs[k] != null) e.setAttribute(k, String(attrs[k])); }
+    else if(attrs[k] === true) e.setAttribute(k,"");
+    else if(attrs[k] !== false && attrs[k] != null) e.setAttribute(k, attrs[k]);
+  });
+  (kids || []).forEach(function(c){ if(c) e.appendChild(c); });
+  return e;
+}
+function eyebrow(x){ return h("div",{cls:"eyebrow",text:x}); }
+
+function copyText(str){
+  var ta = document.createElement("textarea");
+  ta.value = str; ta.style.position = "fixed"; ta.style.top = "-1000px";
+  document.body.appendChild(ta); ta.select();
+  var ok = false;
+  try{ ok = document.execCommand("copy"); }catch(e){}
+  document.body.removeChild(ta);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    try{ navigator.clipboard.writeText(str); ok = true; }catch(e){}
+  }
+  return ok;
+}
+function flash(btn, msg, back, cls){
+  var old = btn.className;
+  btn.className = old + " " + (cls || "done"); btn.textContent = msg;
+  setTimeout(function(){ btn.className = old; btn.textContent = back; }, 2400);
+}
+function go(scr){ S.screen = scr; S.err = ""; render(); window.scrollTo(0,0); }
+
+function saveText(filename, text, btn){
+  var back = btn ? btn.textContent : "";
+  if(window.claude && window.claude.downloads){
+    window.claude.downloads.save({ filename:filename, data:text })
+      .then(function(){ if(btn) flash(btn, t("saved"), back); })
+      .catch(function(err){
+        if(err && err.code === "declined") return;
+        if(btn) flash(btn, t("errSave"), back);
+      });
+    return;
+  }
+  var blob = new Blob([text], { type:"text/plain;charset=utf-8" });
+  var u = URL.createObjectURL(blob);
+  var a = h("a",{ href:u, download:filename });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(u); }, 1000);
+  if(btn) flash(btn, t("saved"), back);
+}
+
+/* 결과 코드를 카톡으로 보낼 때 쓰는 글을 만듭니다.
+   여는 방법을 번호로 적어 두지 않으면 사장님이 코드만 보고 당황합니다.
+   운영실과 장부에서 같은 글이 나가야 하므로 한곳에서 만듭니다. */
+function sendMsg(head, code, pin){
+  if(S.lang === "en"){
+    return head + "\n\n" +
+      "1. Press and hold the long text below, copy all of it\n" +
+      "2. Go to 길 → 'Open a result' → paste\n" +
+      (pin ? "3. Enter key " + pin + " and press 'Open it'\n\n" : "3. Press 'Open it'\n\n") +
+      code + (pin ? "\n\nKey : " + pin : "");
+  }
+  return head + "\n\n" +
+    "① 아래 긴 글자를 길게 눌러 전체 복사\n" +
+    "② 길 사이트 → '받은 결과 열기' → 붙여넣기\n" +
+    (pin ? "③ 열쇠번호 " + pin + " 을 넣고 '펼쳐보기'\n\n" : "③ '펼쳐보기'\n\n") +
+    code + (pin ? "\n\n열쇠번호 : " + pin : "");
+}
+
+function resultToText(r){
+  var L = [];
+  /* 카톡에 그대로 붙여넣는 글입니다. 화면 말에 맞춰 제목도 바뀝니다. */
+  var en = S.lang === "en";
+  var W = en ? {
+    brand:"[IN ONE LINE] ", head:"[HEADLINES]", script:"[SCRIPT]",
+    scene:"   Scene: ", shot:"   Shot: ", capt:"   Caption: ", voice:"   Voice: ",
+    caps:"[CAPTIONS ONLY]", props:"[PROPS]", tips:"[SHOOTING TIPS]",
+    capcut:"[CAPCUT STEPS]", vllo:"[VLLO STEPS]", tags:"[HASHTAGS] ", cta:"[CLOSING LINE] "
+  } : {
+    brand:"[한 줄 정의] ", head:"[광고 문구]", script:"[대본]",
+    scene:"   화면: ", shot:"   촬영: ", capt:"   자막: ", voice:"   대사: ",
+    caps:"[자막만]", props:"[준비물]", tips:"[촬영 요령]",
+    capcut:"[캡컷 편집 순서]", vllo:"[블로 편집 순서]", tags:"[해시태그] ", cta:"[마지막 한 줄] "
+  };
+
+  L.push(W.brand + r.brandLine, "");
+  L.push(W.head); r.headlines.forEach(function(x,i){ L.push((i+1) + ". " + x); }); L.push("");
+  L.push(W.script);
+  r.storyboard.forEach(function(c,i){
+    L.push((i+1) + ") " + c.time);
+    L.push(W.scene + c.visual);
+    if(c.shot) L.push(W.shot + c.shot);
+    if(c.caption) L.push(W.capt + c.caption);
+    if(c.voice) L.push(W.voice + c.voice);
+  });
+  L.push("");
+  L.push(W.caps); r.storyboard.forEach(function(c){ if(c.caption) L.push(c.caption); }); L.push("");
+  if(r.props.length){ L.push(W.props); r.props.forEach(function(x){ L.push("- " + x); }); L.push(""); }
+  if(r.shootTips.length){ L.push(W.tips); r.shootTips.forEach(function(x){ L.push("- " + x); }); L.push(""); }
+  if(r.edit.capcut.length){ L.push(W.capcut); r.edit.capcut.forEach(function(x,i){ L.push((i+1) + ". " + x); }); L.push(""); }
+  if(r.edit.vllo.length){ L.push(W.vllo); r.edit.vllo.forEach(function(x,i){ L.push((i+1) + ". " + x); }); L.push(""); }
+  if(r.hashtags.length) L.push(W.tags + r.hashtags.join(" "));
+  if(r.cta) L.push(W.cta + r.cta);
+  return L.join("\n");
+}
+
+/* =========================================================
+   7) 화면
+   ========================================================= */
+var SCREENS = {};
+function render(){
+  var app = document.getElementById("app");
+  app.textContent = "";
+  document.getElementById("dash").className =
+    (S.screen === "sheet" || S.screen === "opPrompt") ? "dash run" : "dash";
+  document.getElementById("langKo").setAttribute("aria-pressed", S.lang === "ko");
+  document.getElementById("langEn").setAttribute("aria-pressed", S.lang === "en");
+  try{ document.documentElement.lang = S.lang; }catch(e){}
+  SCREENS[S.screen](app);
+}
+function opBar(){
+  var n = loadLedger().length;
+  return h("div",{cls:"opbar"},[
+    h("span",{text:"● " + t("op")}),
+    h("span",{cls:"row",style:"gap:2px"},[
+      h("button",{cls:"tiny",text:t("ledger") + (n ? " " + n : ""),
+                  on:{click:function(){ S.ledgerMsg = ""; go("opLedger"); }}}),
+      h("button",{cls:"tiny",text:t("reply"),on:{click:function(){ go("opReply"); }}}),
+      h("button",{cls:"tiny",text:t("contact") + (hasContact() ? "" : " ⚠"),
+                  on:{click:function(){ go("opContact"); }}}),
+      h("button",{cls:"tiny",text:t("exit"),on:{click:function(){ go("intro"); }}})
+    ])
+  ]);
+}
+
+/* ---------- 운영실 : 장부 ----------
+
+   여기 있는 것: 언제 · 어느 가게 · 납기 · 열쇠번호 · 결과 코드
+   사장님이 "번호를 잃어버렸다"고 하시면 이 화면에서 찾아 다시 알려드립니다.
+   ------------------------------------- */
+SCREENS.opLedger = function(app){
+  var list = loadLedger();
+
+  /* 백업할 내용을 한 번만 만들어 두고 두 가지 길에 씁니다 */
+  var now = new Date();
+  var backupText = JSON.stringify(
+    { 종류:"길 장부", 만든날:now.toISOString(), 건수:list.length, 목록:list }, null, 2);
+  var backupName = "길-장부-" + now.getFullYear() + "-" +
+                   ("0" + (now.getMonth()+1)).slice(-2) + "-" +
+                   ("0" + now.getDate()).slice(-2) + ".json";
+
+  /* 길 ①: 파일로 내려받기.
+     액자 안에서는 내려받기가 막히거나, 받아도 어디 갔는지 못 찾는 일이 있습니다.
+     그래서 이 버튼만 두지 않고 아래에 글로 복사하는 길을 반드시 함께 둡니다. */
+  var dl = h("button",{cls:"btn",text:t("bkDownload"),on:{click:function(){
+    if(!list.length){ S.ledgerMsg = t("bkEmpty"); render(); return; }
+    saveText(backupName, backupText, dl);
+    S.ledgerMsg = t("bkWhere");
+    S.showBackup = true;
+    render();
+  }}});
+
+  /* 길 ②: 글로 복사해서 메모장에 붙여넣기. 이건 어디서나 반드시 됩니다. */
+  var showBtn = h("button",{cls:"ghost",text:S.showBackup ? t("bkHide") : t("bkShow"),
+    on:{click:function(){ S.showBackup = !S.showBackup; render(); }}});
+
+  var backupBox = null, copyBackup = null;
+  if(S.showBackup){
+    backupBox = h("textarea",{rows:7,cls:"mono",readonly:true});
+    backupBox.value = backupText;
+    copyBackup = h("button",{cls:"btn",text:t("bkCopy"),on:{click:function(){
+      if(copyText(backupText)) flash(copyBackup, t("copied"), t("bkCopy"));
+      else { backupBox.focus(); backupBox.select(); flash(copyBackup, t("copyManual"), t("bkCopy")); }
+    }}});
+  }
+
+  /* 백업 되살리기 — 파일을 고르는 방법과, 글을 붙여넣는 방법 둘 다 둡니다.
+     액자 안에서는 파일 고르기가 막힐 수 있어 붙여넣기 길을 꼭 남겨 둡니다. */
+  var file = h("input",{type:"file",accept:".json,application/json",
+    style:"width:100%; font-size:13px; color:var(--mute);",
+    on:{change:function(e){
+      var f = e.target.files && e.target.files[0];
+      if(!f) return;
+      var rd = new FileReader();
+      rd.onload = function(){ takeBackup(String(rd.result)); };
+      rd.onerror = function(){ S.ledgerMsg = t("bkFileFail"); render(); };
+      rd.readAsText(f);
+    }}});
+
+  var pasteBox = h("textarea",{rows:4,placeholder:t("bkPastePh"),
+    on:{input:function(e){ S.restore = e.target.value; }}});
+  pasteBox.value = S.restore;
+
+  var takeBackup = function(text){
+    var data;
+    try{ data = JSON.parse(text); }catch(e){
+      S.ledgerMsg = t("bkUnread"); render(); return;
+    }
+    var arr = Array.isArray(data) ? data : (data && Array.isArray(data.목록) ? data.목록 : null);
+    if(!arr){ S.ledgerMsg = t("bkNotOurs"); render(); return; }
+    var added = mergeLedger(arr);
+    if(added < 0) S.ledgerMsg = t("bkFull");
+    else if(added === 0) S.ledgerMsg = t("bkSame");
+    else S.ledgerMsg = tf("bkAdded", { n:added });
+    S.restore = "";
+    render();
+  };
+
+  var rbtn = h("button",{cls:"ghost",text:t("bkRestoreBtn"),on:{click:function(){
+    if(!S.restore.trim()){ S.ledgerMsg = t("bkNothing"); render(); return; }
+    takeBackup(S.restore);
+  }}});
+
+  /* 한 건을 그리는 상자 */
+  var card = function(x){
+    var due = tierLabel(x.tier);
+    var codeBtn = h("button",{cls:"ghost mini",text:t("copyCode"),on:{click:function(){
+      if(copyText(x.code)) flash(codeBtn, t("copied"), t("copyCode"));
+    }}});
+    var againBtn = h("button",{cls:"ghost mini",text:t("againSend"),on:{click:function(){
+      if(copyText(sendMsg(t("againMsg"), x.code, x.pin))) flash(againBtn, t("copied"), t("againSend"));
+    }}});
+    var openBtn = h("button",{cls:"ghost mini",text:t("openIt"),on:{click:function(){
+      unpack(x.code, x.pin).then(function(r){
+        if(r.ok){ S.result = r.ok; S.tab = "plan"; go("done"); }
+        else { S.ledgerMsg = t("openFail"); render(); }
+      });
+    }}});
+    var delBtn = h("button",{cls:"tiny",text:t("del"),on:{click:function(){
+      /* 되돌릴 수 없으므로 한 번 더 누르게 합니다 (경고창은 화면을 멈추게 하므로 쓰지 않습니다) */
+      if(delBtn.dataset.sure === "1"){
+        removeLedger(x.id); S.ledgerMsg = t("delDone"); render(); return;
+      }
+      delBtn.dataset.sure = "1";
+      delBtn.textContent = t("delSure");
+      setTimeout(function(){
+        if(delBtn.isConnected){ delBtn.dataset.sure = ""; delBtn.textContent = t("del"); }
+      }, 4000);
+    }}});
+
+    return h("div",{cls:"card stack"},[
+      h("div",{cls:"row",style:"justify-content:space-between; align-items:baseline"},[
+        h("span",{cls:"eyebrow",text:whenText(x.at)}),
+        h("span",{cls:"eyebrow",text:due + " · " + lenLabel(x.sec)})
+      ]),
+      h("div",{cls:"disp",style:"font-size:17px",text:x.name || x.who || t("noName")}),
+      x.who ? h("div",{cls:"note",style:"margin:0",text:t("contactIs") + " " + x.who}) : null,
+      x.brief ? h("div",{cls:"note",style:"margin:0",text:x.brief}) : null,
+      x.pin ? h("div",{cls:"copyrow"},[
+        h("span",{cls:"eyebrow",text:t("keyNo")}),
+        h("span",{cls:"copyval",style:"font-size:20px; letter-spacing:.3em; color:var(--accent-ink); font-weight:800",
+                  text:x.pin})
+      ]) : h("div",{cls:"note",style:"margin:0",text:t("noLock")}),
+      h("div",{cls:"row"},[ againBtn, codeBtn, openBtn, delBtn ])
+    ]);
+  };
+
+  app.appendChild(h("div",{style:"padding-top:78px"},[
+    opBar(),
+    eyebrow(t("ledger")),
+    h("h2",{cls:"disp h2",style:"font-size:22px",
+            text:list.length ? tf("ledgerCount", { n:list.length }) : t("ledgerNone")}),
+    h("p",{cls:"note",style:"margin-top:6px",text:t("ledgerWhat")}),
+
+    S.ledgerMsg ? h("p",{cls:"okmsg",style:"margin-top:12px",text:S.ledgerMsg}) : null,
+
+    h("div",{style:"margin-top:22px"},[ eyebrow(t("bkTitle")) ]),
+    h("div",{cls:"card stack",style:"margin-top:10px"},[
+      dl,
+      showBtn,
+      backupBox,
+      copyBackup,
+      /* 파일이 안 만들어질 때가 있어서, 글로 저장하는 법을 적어 둡니다 */
+      S.showBackup ? h("p",{cls:"note",style:"margin:0",text:t("bkHow")}) : null
+    ]),
+
+    h("div",{style:"margin-top:26px"},[ eyebrow(t("bkRestore")) ]),
+    h("div",{cls:"card stack",style:"margin-top:10px"},[
+      h("div",{cls:"note",style:"margin:0",text:t("bkPickFile")}),
+      file,
+      pasteBox,
+      rbtn
+    ]),
+
+    h("div",{style:"margin-top:26px"},[ eyebrow(t("ledgerItems")) ]),
+    h("div",{cls:"stack",style:"margin-top:10px"},
+      list.length ? list.map(card)
+                  : [ h("div",{cls:"card"},[ h("p",{cls:"note",style:"margin:0",
+                      text:t("ledgerEmptyHint")}) ]) ]),
+
+    h("button",{cls:"ghost",style:"margin-top:22px",text:t("back"),
+                on:{click:function(){ go("opSheet"); }}})
+  ]));
+};
+
+/* ---------- 운영실 : 답장 문구 ---------- */
+SCREENS.opReply = function(app){
+  // 사장님이 고른 납기를 문구에 자동으로 끼워 넣습니다.
+  // 문구가 "{납기} 안에" 이므로 여기에 '안'을 붙이면 "1일 안 안에"가 됩니다. 붙이지 마세요.
+  var due = S.req ? tierLabel(S.req.tier) : t("d1");
+  var cards = REPLIES.map(function(r){
+    var text = r.m.replace(/\{납기\}/g, due);
+    var pre = h("textarea",{rows:Math.min(9, text.split("\n").length + 1)});
+    pre.value = text;
+    var b = h("button",{cls:"btn",text:t("copy"),on:{click:function(){
+      if(copyText(pre.value)) flash(b, t("copied"), t("copy"));
+      else { pre.focus(); pre.select(); flash(b, t("copyManual"), t("copy")); }
+    }}});
+    return h("div",{cls:"card stack"},[
+      h("div",{cls:"disp",style:"font-size:17px",text:r.k}),
+      h("div",{cls:"note",style:"margin:0",text:r.w}),
+      pre, b
+    ]);
+  });
+
+  app.appendChild(h("div",{style:"padding-top:78px"},[
+    opBar(),
+    eyebrow(t("reply")),
+    h("h2",{cls:"disp h2",style:"font-size:22px",text:t("replySub")}),
+    h("p",{cls:"note",style:"margin-top:6px",text:t("replyNote")}),
+    h("div",{cls:"stack",style:"margin-top:16px"}, cards),
+    h("button",{cls:"ghost",style:"margin-top:18px",text:t("back"),
+                on:{click:function(){ go("opSheet"); }}})
+  ]));
+};
+
+/* ---------- 운영실 : 연락처 설정 ---------- */
+SCREENS.opContact = function(app){
+  var fields = [
+    ["kakaoOpen", t("cKakaoOpen"), t("cKakaoOpenPh")],
+    ["kakaoId",   t("cKakaoId"),   t("cKakaoIdPh")],
+    ["phone",     t("cPhone"),     t("cPhonePh")],
+    ["email",     t("cEmail"),     t("cEmailPh")]
+  ];
+  var boxes = [];
+  fields.forEach(function(f){
+    var inp = h("input",{type:"text",placeholder:f[2],
+      on:{input:function(e){
+        C[f[0]] = e.target.value.trim();
+        /* 카톡 링크는 넣는 즉시 어느 쪽인지 알려 줍니다.
+           저장하고 나서야 알면 이미 사장님 화면에 나간 뒤입니다. */
+        if(f[0] === "kakaoOpen") render();
+      }}});
+    inp.value = C[f[0]] || "";
+    var kid = [ h("div",{cls:"eyebrow",style:"margin-bottom:6px",text:f[1]}), inp ];
+
+    if(f[0] === "kakaoOpen"){
+      var kind = kakaoKind(C.kakaoOpen);
+      var info = kakaoNote(kind);
+      if(kind !== "none"){
+        kid.push(h("p",{cls:info.safe ? "okmsg" : "warn",style:"margin-top:6px",
+          text:(info.safe ? "✓ " : "⚠ ") + info.label + " · " + info.say}));
+      }
+    }
+    boxes.push(h("div",{}, kid));
+  });
+
+  /* 1:1 오픈채팅 만드는 법 — 화면 안에 두어야 카카오톡을 열었다 돌아와도 안 잊습니다 */
+  var howSteps = S.lang === "en" ? [
+    "Open KakaoTalk and tap 'Chats' at the bottom",
+    "Tap the speech bubble at the top right → 'Open Chat'",
+    "Tap + at the bottom right",
+    "Choose '1:1 Chat'",
+    "Name it something like '길 — ad video requests'",
+    "Once made, tap 'Copy link' inside the room",
+    "Paste that link in the first box above and save"
+  ] : [
+    "카카오톡을 열고 아래쪽 '채팅' 누르기",
+    "오른쪽 위 말풍선 모양 → '오픈채팅' 누르기",
+    "오른쪽 아래 + 누르기",
+    "'1:1 채팅방' 고르기",
+    "방 이름은 '길 — 광고 영상 신청' 처럼 짓기",
+    "만든 뒤 방 안에서 '링크 복사'",
+    "복사한 링크를 위 첫 칸에 붙여넣고 저장"
+  ];
+  var howCard = h("div",{cls:"card",style:"margin-top:10px"},
+    howSteps.map(function(x,i){
+      return h("div",{cls:"step"},[
+        h("span",{cls:"num",text:String(i+1)}), h("span",{text:x})
+      ]);
+    }));
+
+  var sbtn = h("button",{cls:"btn",text:t("saveContact"),on:{click:function(){
+    saveContact(); flash(sbtn, t("contactSaved"), t("saveContact"));
+  }}});
+
+  var lbtn = h("button",{cls:"ghost",text:t("copyLine"),on:{click:function(){
+    var line = "var CONTACT_DEFAULT = {\n" +
+      '  kakaoOpen : "' + (C.kakaoOpen || "") + '",\n' +
+      '  kakaoId   : "' + (C.kakaoId   || "") + '",\n' +
+      '  phone     : "' + (C.phone     || "") + '",\n' +
+      '  email     : "' + (C.email     || "") + '"\n};';
+    if(copyText(line)) flash(lbtn, t("copied"), t("copyLine"));
+  }}});
+
+  app.appendChild(h("div",{style:"padding-top:78px"},[
+    opBar(),
+    eyebrow(t("contact")),
+    h("h2",{cls:"disp h2",style:"font-size:22px",text:t("contactSub")}),
+
+    /* 어느 쪽이 얼마나 보이는지 먼저 보여줍니다 */
+    h("div",{cls:"card",style:"margin-top:14px"},[
+      h("div",{cls:"step"},[
+        h("span",{cls:"num",text:"✓"}),
+        h("span",{},[
+          h("div",{style:"font-weight:800",text:t("safeTitle1")}),
+          h("div",{cls:"note",style:"margin-top:2px",text:t("safeSub1")})
+        ])
+      ]),
+      h("div",{cls:"step"},[
+        h("span",{cls:"num",text:"△"}),
+        h("span",{},[
+          h("div",{style:"font-weight:800",text:t("safeTitle2")}),
+          h("div",{cls:"note",style:"margin-top:2px",text:t("safeSub2")})
+        ])
+      ])
+    ]),
+
+    h("div",{cls:"stack",style:"margin-top:16px"}, boxes),
+
+    h("div",{style:"margin-top:26px"},[ eyebrow(t("howOpen")) ]),
+    howCard,
+
+    h("div",{cls:"stack",style:"margin-top:18px"},[
+      sbtn,
+      h("p",{cls:"note",text:t("contactWarn")}),
+      lbtn,
+      h("button",{cls:"ghost",text:t("back"),on:{click:function(){ go("opSheet"); }}})
+    ])
+  ]));
+};
+
+/* ---------- 앞문 : 시작 ---------- */
+SCREENS.intro = function(app){
+  app.appendChild(h("div",{style:"padding-top:118px"},[
+    eyebrow("01 · " + t("stepStart")),
+    h("h1",{cls:"disp h1",text:"길"}),
+    h("p",{cls:"lead",style:"margin-top:18px",text:t("tagline")}),
+    h("div",{cls:"stack",style:"margin-top:40px"},[
+      h("button",{cls:"btn",text:"+ " + t("start"),on:{click:function(){ go("tier"); }}}),
+      h("button",{cls:"ghost",text:t("openResult"),on:{click:function(){ go("openCode"); }}})
+    ]),
+    h("div",{style:"margin-top:34px"},[
+      h("button",{cls:"tiny",text:t("opRoom"),on:{click:function(){ go("opSheet"); }}})
+    ])
+  ]));
+};
+
+/* ---------- 앞문 : 납기 ---------- */
+SCREENS.tier = function(app){
+  var list = [
+    { id:"fast", name:t("fast"), note:t("fastNote") },
+    { id:"d1",   name:t("d1"),   note:t("d1Note")  },
+    { id:"d2",   name:t("d2"),   note:t("d2Note")  }
+  ];
+  app.appendChild(h("div",{style:"padding-top:90px"},[
+    eyebrow("02 · " + t("stepDue")),
+    h("h2",{cls:"disp h2",text:t("s1")}),
+    h("p",{cls:"sub",text:t("s1sub")}),
+    h("div",{cls:"stack",style:"margin-top:22px"}, list.map(function(x){
+      var lock = TIERS[x.id].locked;
+      var on = !lock && S.tier === x.id;
+      // 잠긴 등급은 눌리지 않고, 자물쇠와 글자로 함께 표시합니다 (색만으로 알리지 않기)
+      // 고른 것에도 ✓ 를 붙입니다. 동그라미 색만으로는 알아채기 어렵습니다.
+      return h("button",{cls:"opt" + (lock ? " lock" : ""),
+        "aria-pressed":on, disabled:lock,
+        on:{click:function(){ if(lock) return; S.tier = x.id; render(); }}},[
+        h("span",{cls:"dot"}),
+        h("span",{},[
+          h("span",{cls:"optName",text:(lock ? "🔒 " : (on ? "✓ " : "")) + x.name}),
+          h("div",{cls:lock ? "price lockprice" : "price",
+                   text:lock ? t("locked") : (on ? t("picked") : t("free"))}),
+          h("div",{cls:"note",text:x.note})
+        ])
+      ]);
+    })),
+    h("p",{cls:"note",style:"margin-top:12px",text:t("allFree")}),
+    h("div",{cls:"stack",style:"margin-top:16px"},[
+      h("button",{cls:"btn",text:t("next"),disabled:!S.tier,on:{click:function(){ go("brief"); }}}),
+      h("button",{cls:"ghost",text:t("back"),on:{click:function(){ go("intro"); }}})
+    ])
+  ]));
+};
+
+/* ---------- 앞문 : 내용 ---------- */
+SCREENS.brief = function(app){
+  var ta = h("textarea",{rows:7,placeholder:t("ph"),
+    on:{input:function(e){ S.brief = e.target.value; btn.disabled = S.brief.trim().length < 10; }}});
+  ta.value = S.brief;
+  var who = h("input",{type:"text",placeholder:t("whoPh"),
+    on:{input:function(e){ S.who = e.target.value; }}});
+  who.value = S.who;
+  /* 고른 것에는 ✓ 를 함께 붙입니다. 색만으로 알리면 못 보시는 분이 생깁니다. */
+  var lenRow = h("div",{cls:"chips"}, LENGTHS.map(function(L){
+    var on = S.sec === L.v;
+    return h("button",{cls:"chip","aria-pressed":on,
+      text:(on ? "✓ " : "") + (S.lang === "en" ? L.en : L.ko),
+      on:{click:function(){ S.sec = L.v; render(); }}});
+  }));
+  var btn = h("button",{cls:"btn",text:t("send"),disabled:S.brief.trim().length < 10,
+    on:{click:function(){ S.sheet = buildSheet(); go("sheet"); }}});
+
+  app.appendChild(h("div",{style:"padding-top:90px"},[
+    eyebrow("03 · " + t("stepAbout")),
+    h("h2",{cls:"disp h2",text:t("s2")}),
+    h("p",{cls:"sub",style:"margin-bottom:16px",text:t("s2sub")}),
+    ta,
+    h("div",{style:"margin-top:20px"},[ eyebrow(t("len")) ]),
+    h("div",{style:"margin-top:8px"},[ lenRow ]),
+    h("div",{style:"margin-top:20px"},[ eyebrow(t("who")) ]),
+    h("div",{style:"margin-top:8px"},[ who ]),
+    h("div",{cls:"stack",style:"margin-top:22px"},[
+      btn,
+      h("button",{cls:"ghost",text:t("back"),on:{click:function(){ go("tier"); }}})
+    ])
+  ]));
+};
+
+/* ---------- 앞문 : 신청서 완성 ---------- */
+SCREENS.sheet = function(app){
+  var pre = h("textarea",{rows:9,cls:"mono",readonly:true});
+  pre.value = S.sheet;
+  var cbtn = h("button",{cls:"btn",text:t("copySheet"),on:{click:function(){
+    if(copyText(S.sheet)) flash(cbtn, t("sheetDone"), t("copySheet"));
+    else { pre.focus(); pre.select(); flash(cbtn, t("copyManual"), t("copySheet")); }
+  }}});
+  app.appendChild(h("div",{style:"padding-top:90px"},[
+    eyebrow("04 · " + t("stepSend")),
+    h("h2",{cls:"disp h2",text:t("s3")}),
+    h("p",{cls:"sub",style:"margin-bottom:14px",text:t("s3sub")}),
+    pre,
+    h("div",{cls:"stack",style:"margin-top:14px"},[ cbtn ]),
+    h("div",{style:"margin-top:28px"},[ eyebrow(t("sendTo")) ]),
+    contactBlock(),
+    h("div",{style:"margin-top:28px"},[ eyebrow(t("after")) ]),
+    afterBlock(),
+    h("div",{cls:"stack",style:"margin-top:18px"},[
+      h("button",{cls:"ghost",text:t("newOne"),on:{click:function(){
+        S.tier = null; S.brief = ""; S.who = ""; S.sheet = ""; go("intro");
+      }}})
+    ])
+  ]));
+};
+
+/* 보낸 뒤 무슨 일이 일어나는지 미리 알려 줍니다.
+   1:1 오픈채팅에는 자동응답이 없어서, 사장님이 "보내놓고 아무 반응 없네"라고
+   불안해하는 구간이 생깁니다. 그 불안을 화면에서 미리 없앱니다. */
+function afterBlock(){
+  var due = S.tier ? tierLabel(S.tier) : "";
+  var rows = [
+    ["1", t("st1"), t("st1sub")],
+    ["2", t("st2"), t("st2sub") + (due ? " (" + due + ")" : "")],
+    ["3", t("st3"), t("st3sub")]
+  ];
+  return h("div",{cls:"card",style:"margin-top:10px"},
+    rows.map(function(r){
+      return h("div",{cls:"step"},[
+        h("span",{cls:"num",text:r[0]}),
+        h("span",{},[
+          h("div",{style:"font-weight:800",text:r[1]}),
+          h("div",{cls:"note",style:"margin-top:2px",text:r[2]})
+        ])
+      ]);
+    }).concat([ h("p",{cls:"note",style:"margin-top:14px",text:t("noPush")}) ])
+  );
+}
+
+/* 사장님에게 "어디로 보내야 하는지" 보여주는 상자.
+   비어 있는 항목은 아예 그리지 않습니다.
+   링크가 막히는 곳에서도 쓸 수 있게, 항상 복사 버튼을 함께 둡니다. */
+function contactBlock(){
+  if(!hasContact()){
+    return h("div",{cls:"card",style:"margin-top:10px"},[
+      h("p",{cls:"warn",style:"margin:0",text:t("noContact")})
+    ]);
+  }
+  var rows = [];
+
+  if(C.kakaoOpen){
+    rows.push(h("a",{cls:"btn linkbtn",href:C.kakaoOpen,target:"_blank",
+                     rel:"noopener noreferrer",text:t("goKakao")}));
+    rows.push(copyRow("", C.kakaoOpen));
+    /* 가게 사정을 적어 보내는 일이라, 누가 보는지가 사장님께 제일 큰 걱정입니다.
+       보내기 직전에 그 걱정을 없애 줍니다. 링크 종류에 맞는 말로 적습니다. */
+    rows.push(h("p",{cls:"note",style:"margin:2px 0 0",
+      text:kakaoKind(C.kakaoOpen) === "open" ? t("privOpen") : t("privChannel")}));
+  }
+  if(C.kakaoId){
+    rows.push(h("div",{cls:"eyebrow",style:"margin-top:6px",text:t("kakaoIdLabel")}));
+    rows.push(copyRow("", C.kakaoId));
+  }
+  if(C.phone){
+    rows.push(h("div",{cls:"eyebrow",style:"margin-top:6px",text:t("phoneLabel")}));
+    rows.push(h("a",{cls:"ghost linkbtn",href:"sms:" + C.phone.replace(/[^0-9+]/g,""),
+                     text:t("sendSms")}));
+    rows.push(copyRow("", C.phone));
+  }
+  if(C.email){
+    rows.push(h("div",{cls:"eyebrow",style:"margin-top:6px",text:t("emailLabel")}));
+    rows.push(h("a",{cls:"ghost linkbtn",href:"mailto:" + C.email,text:t("sendMail")}));
+    rows.push(copyRow("", C.email));
+  }
+  return h("div",{cls:"card stack",style:"margin-top:10px"}, rows);
+}
+
+/* 글자 + 복사 버튼 한 줄 */
+function copyRow(label, value){
+  var b = h("button",{cls:"ghost mini",text:t("copy"),on:{click:function(){
+    if(copyText(value)) flash(b, t("copied"), t("copy"));
+  }}});
+  return h("div",{cls:"copyrow"},[
+    h("span",{cls:"copyval",text:(label ? label + " " : "") + value}), b
+  ]);
+}
+
+/* ---------- 앞문 : 결과 열기 ---------- */
+SCREENS.openCode = function(app){
+  var ta = h("textarea",{rows:8,placeholder:t("phCode"),
+    on:{input:function(e){
+      S.code = e.target.value;
+      /* 붙여넣는 순간 잠긴 결과인지 알아보고 열쇠 칸을 띄웁니다.
+         "왜 안 열리지" 하고 헤매는 시간을 없앱니다. */
+      var lock = isLocked(S.code);
+      if(lock !== S.askPin){ S.askPin = lock; render(); }
+    }}});
+  ta.value = S.code;
+
+  var pinBox = h("input",{type:"text",inputmode:"numeric",maxlength:"4",
+    placeholder:"0000",style:"letter-spacing:.5em; font-family:var(--mono);",
+    on:{input:function(e){
+      S.pin = e.target.value.replace(/[^0-9]/g,"").slice(0,4);
+      e.target.value = S.pin;
+    }}});
+  pinBox.value = S.pin;
+
+  var openBtn = h("button",{cls:"btn",text:t("open"),on:{click:function(){
+    unpack(S.code, S.pin).then(function(r){
+      if(r.ok){ S.result = r.ok; S.tab = "plan"; go("done"); return; }
+      if(r.need === "pin"){ S.askPin = true; S.err = t("pinNeed"); }
+      else if(r.bad === "pin"){ S.askPin = true; S.err = t("pinWrong"); }
+      else { S.err = t("errCode"); }
+      render();
+    });
+  }}});
+
+  app.appendChild(h("div",{style:"padding-top:90px"},[
+    eyebrow("05 · " + t("stepResult")),
+    h("h2",{cls:"disp h2",text:t("s4")}),
+    h("p",{cls:"sub",style:"margin-bottom:14px",text:t("s4sub")}),
+    ta,
+    /* 받은 글 전체를 붙여넣어도 된다고 분명히 알려 줍니다.
+       코드만 골라내라고 하면 사장님이 어디부터 어디까지인지 몰라 막힙니다. */
+    h("p",{cls:"note",style:"margin-top:8px",text:t("pasteWhole")}),
+    /* 잠긴 결과일 때만 열쇠 칸이 나타납니다 */
+    S.askPin ? h("div",{style:"margin-top:18px"},[
+      h("div",{cls:"eyebrow",style:"margin-bottom:6px",text:t("pinLabel")}),
+      pinBox,
+      h("p",{cls:"note",style:"margin-top:6px",text:t("pinHelp")})
+    ]) : null,
+    S.err ? h("p",{cls:"warn",style:"margin-top:12px",text:S.err}) : null,
+    h("div",{cls:"stack",style:"margin-top:16px"},[
+      openBtn,
+      h("button",{cls:"ghost",text:t("back"),on:{click:function(){ go("intro"); }}})
+    ])
+  ]));
+};
+
+/* ---------- 운영실 1 : 신청서 받기 ---------- */
+SCREENS.opSheet = function(app){
+  var ta = h("textarea",{rows:9,placeholder:t("phSheet"),
+    on:{input:function(e){ S.sheet = e.target.value; }}});
+  ta.value = S.sheet;
+  app.appendChild(h("div",{style:"padding-top:78px"},[
+    opBar(),
+    eyebrow(t("op1")),
+    h("h2",{cls:"disp h2",style:"font-size:22px",text:t("op1sub")}),
+    h("div",{style:"margin-top:14px"},[ ta ]),
+    S.err ? h("p",{cls:"warn",style:"margin-top:12px",text:S.err}) : null,
+    h("div",{cls:"stack",style:"margin-top:16px"},[
+      h("button",{cls:"btn",text:t("readSheet"),on:{click:function(){
+        var req = readSheet(S.sheet);
+        if(!req){ S.err = t("errSheet"); render(); return; }
+        /* 외국인 사장님 신청서면 운영실도 그 말로 바꿉니다.
+           그래야 지시문·결과 글·안내문이 전부 같은 말로 나갑니다. */
+        if(req.lang && req.lang !== S.lang){ S.lang = req.lang; saveLang(); }
+        S.req = req; S.prompt = buildPrompt(req); go("opPrompt");
+      }}})
+    ])
+  ]));
+};
+
+/* ---------- 운영실 2 : 지시문 ---------- */
+SCREENS.opPrompt = function(app){
+  var pre = h("textarea",{rows:14,cls:"mono"});
+  pre.value = S.prompt;
+  pre.addEventListener("input", function(e){ S.prompt = e.target.value; });
+  var cbtn = h("button",{cls:"btn",text:t("copy"),on:{click:function(){
+    if(copyText(S.prompt)) flash(cbtn, t("copied"), t("copy"));
+    else { pre.focus(); pre.select(); flash(cbtn, t("copyManual"), t("copy")); }
+  }}});
+  app.appendChild(h("div",{style:"padding-top:78px"},[
+    opBar(),
+    eyebrow(t("op2")),
+    h("h2",{cls:"disp h2",style:"font-size:22px",text:t("op2sub")}),
+    h("div",{cls:"card",style:"margin-top:14px"},[
+      h("div",{cls:"note",text:t("reqTier") + " " + tierLabel(S.req.tier)
+        + " · " + t("reqLen") + " " + lenLabel(S.req.sec)
+        + (S.req.who ? " · " + t("reqWho") + " " + S.req.who : "")})
+    ]),
+    h("div",{style:"margin-top:12px"},[ pre ]),
+    h("div",{cls:"stack",style:"margin-top:14px"},[
+      cbtn,
+      h("button",{cls:"btn",text:t("next"),on:{click:function(){ go("opPaste"); }}}),
+      h("button",{cls:"ghost",text:t("back"),on:{click:function(){ go("opSheet"); }}})
+    ])
+  ]));
+};
+
+/* ---------- 운영실 3 : 답 붙여넣기 ---------- */
+SCREENS.opPaste = function(app){
+  var ta = h("textarea",{rows:12,placeholder:t("phAns"),
+    on:{input:function(e){ S.raw = e.target.value; }}});
+  ta.value = S.raw;
+  app.appendChild(h("div",{style:"padding-top:78px"},[
+    opBar(),
+    eyebrow(t("op3")),
+    h("h2",{cls:"disp h2",style:"font-size:22px",text:t("op3sub")}),
+    h("div",{style:"margin-top:14px"},[ ta ]),
+    S.err ? h("p",{cls:"warn",style:"margin-top:12px",text:S.err}) : null,
+    h("div",{cls:"stack",style:"margin-top:16px"},[
+      h("button",{cls:"btn",text:t("makeLink"),on:{click:function(){
+        var r = parseResult(S.raw);
+        if(!r){ S.err = t("errParse"); render(); return; }
+        S.result = r;
+        /* 결과를 만들 때마다 열쇠번호를 새로 뽑아 잠급니다.
+           코드가 새어 나가도 이 번호를 모르면 열리지 않습니다. */
+        S.pin = hasCrypto() ? newPin() : "";
+        pack(r, S.pin).then(function(code){
+          S.code = code;
+          /* 바탕 주소를 못 정하면(액자 안 등) 링크는 만들지 않습니다.
+             엉뚱한 주소를 보내면 사장님 화면에 에러가 뜨기 때문입니다. */
+          var base = siteBase();
+          S.link = base ? (base + "#r=" + code) : "";
+
+          /* 장부에 적어 둡니다. 열쇠번호를 나중에 다시 알려드리려면 이게 있어야 합니다. */
+          var q = S.req || {};
+          S.ledgerOk = addLedger({
+            id   : newId(),
+            at   : Date.now(),
+            who  : q.who || "",
+            tier : q.tier || "",
+            sec  : q.sec || "",
+            brief: String(q.brief || "").slice(0, 120),
+            name : r.brandLine || "",
+            pin  : S.pin,
+            code : code
+          });
+          go("opSend");
+        });
+      }}}),
+      h("button",{cls:"ghost",text:t("back"),on:{click:function(){ go("opPrompt"); }}})
+    ])
+  ]));
+};
+
+/* ---------- 운영실 4 : 사장님께 보내기 ----------
+
+   보내는 길이 두 갈래입니다.
+
+   [바로 읽기]  결과 전문을 카톡 글로 그대로 보냅니다.
+                사장님은 아무것도 누르지 않고 카톡에서 바로 읽습니다.
+                단계가 0입니다. 대부분 이걸 쓰면 됩니다.
+
+   [예쁜 화면]  결과 코드 + 열쇠번호를 보냅니다.
+                사장님이 사이트에서 다섯 칸으로 나뉜 화면을 봅니다.
+                탭으로 나뉘어 있어 촬영장에서 보기 좋습니다.
+   --------------------------------------------------------- */
+SCREENS.opSend = function(app){
+  var hasLink = !!S.link;
+  var long = hasLink && S.link.length > 1800;
+  var locked = !!S.pin;
+
+  var head = S.lang === "en"
+    ? "Your ad video plan is ready."
+    : "사장님, 광고 영상 제작안 다 됐습니다.";
+  var tail = S.lang === "en"
+    ? "\n\nTell me anything you want changed."
+    : "\n\n고치고 싶은 데 있으면 편하게 말씀해 주세요.";
+
+  /* ① 바로 읽는 글 — 결과 전문을 카톡에 그대로 붙여넣습니다 */
+  var plain = head + "\n\n" + resultToText(S.result) + tail;
+
+  /* ② 예쁜 화면으로 보내는 글 — 코드와 열쇠번호를 함께 담습니다 */
+  var guide = sendMsg(head, S.code, S.pin);
+
+  var pbtn = h("button",{cls:"btn",text:t("copyDirect"),on:{click:function(){
+    if(copyText(plain)) flash(pbtn, t("copied"), t("copyDirect"));
+    else flash(pbtn, t("copyFail"), t("copyDirect"), "");
+  }}});
+  var gbtn = h("button",{cls:"ghost",text:t("copyPretty"),on:{click:function(){
+    if(copyText(guide)) flash(gbtn, t("copied"), t("copyPretty"));
+  }}});
+
+  var rows = [ pbtn, gbtn ];
+  if(hasLink){
+    var lbtn = h("button",{cls:"ghost",text:t("copyLink"),on:{click:function(){
+      if(copyText(S.link)) flash(lbtn, t("copied"), t("copyLink"));
+    }}});
+    rows.push(lbtn);
+  }
+  rows.push(h("button",{cls:"ghost",text:t("preview"),on:{click:function(){ S.tab = "plan"; go("done"); }}}));
+  rows.push(h("button",{cls:"ghost",text:t("back"),on:{click:function(){ go("opPaste"); }}}));
+
+  /* 열쇠번호는 크게 보여줍니다. 카톡에 옮겨 적을 때 잘못 보면 사장님이 못 엽니다. */
+  var pinCard = locked ? h("div",{cls:"card stack",style:"margin-top:14px"},[
+    h("div",{cls:"eyebrow",text:t("thisPin")}),
+    h("div",{cls:"plate",style:"letter-spacing:.22em",text:S.pin}),
+    h("p",{cls:"note",style:"margin:0",text:t("pinWhy")}),
+    /* 장부에 적혔는지 여기서 바로 알려 줍니다.
+       못 적혔는데 모르고 지나가면 열쇠번호를 영영 잃습니다. */
+    S.ledgerOk
+      ? h("p",{cls:"okmsg",style:"margin:0",text:t("pinSaved")})
+      : h("p",{cls:"warn",style:"margin:0",text:t("pinNotSaved")})
+  ]) : null;
+
+  app.appendChild(h("div",{style:"padding-top:78px"},[
+    opBar(),
+    eyebrow(t("op4")),
+    h("h2",{cls:"disp h2",style:"font-size:22px",text:t("twoWays")}),
+
+    /* 어느 쪽을 쓸지 한눈에 고르게 합니다 */
+    h("div",{cls:"card",style:"margin-top:14px"},[
+      h("div",{cls:"step"},[
+        h("span",{cls:"num",text:"1"}),
+        h("span",{},[
+          h("div",{style:"font-weight:800",text:t("way1")}),
+          h("div",{cls:"note",style:"margin-top:2px",text:t("way1sub")})
+        ])
+      ]),
+      h("div",{cls:"step"},[
+        h("span",{cls:"num",text:"2"}),
+        h("span",{},[
+          h("div",{style:"font-weight:800",text:t("way2")}),
+          h("div",{cls:"note",style:"margin-top:2px",text:t("way2sub")})
+        ])
+      ])
+    ]),
+
+    pinCard,
+
+    h("div",{cls:"card",style:"margin-top:14px"},[
+      h("div",{cls:"note",text:tf("sizeNote", { a:plain.length, b:S.code.length })})
+    ]),
+    long ? h("p",{cls:"warn",style:"margin-top:12px",text:t("linkLong")}) : null,
+    h("div",{cls:"stack",style:"margin-top:14px"}, rows)
+  ]));
+};
+
+/* ---------- 결과 5탭 ---------- */
+SCREENS.done = function(app){
+  var r = S.result;
+  var tabs = [["plan",t("tabPlan")],["script",t("tabScript")],["caption",t("tabCaption")],
+              ["shot",t("tabShot")],["edit",t("tabEdit")]];
+  var bar = h("div",{cls:"tabs",role:"tablist"}, tabs.map(function(x){
+    return h("button",{role:"tab","aria-selected":S.tab === x[0],text:x[1],
+      on:{click:function(){ S.tab = x[0]; render(); }}});
+  }));
+  var body = h("div",{style:"margin-top:20px"});
+  ({ plan:paneP, script:paneS, caption:paneC, shot:paneT, edit:paneE })[S.tab](body, r);
+
+  app.appendChild(h("div",{style:"padding-top:86px"},[
+    h("div",{cls:"plate",style:"margin-bottom:16px",text:"길"}),
+    h("p",{cls:"lead",style:"margin-bottom:22px",text:r.brandLine}),
+    bar, body,
+    h("div",{cls:"stack",style:"margin-top:30px"},[
+      h("button",{cls:"ghost",text:t("download"),on:{click:function(e){
+        saveText("길-제작안.txt", resultToText(r), e.target);
+      }}}),
+      h("button",{cls:"ghost",text:t("back"),on:{click:function(){
+        go(S.req ? "opSend" : "intro");
+      }}})
+    ])
+  ]));
+};
+
+function paneP(box, r){
+  box.appendChild(eyebrow(t("headlines")));
+  box.appendChild(h("div",{cls:"card",style:"margin-top:10px"}, r.headlines.map(function(x,i){
+    return h("div",{style:"padding:10px 0;" + (i ? "border-top:1px dashed var(--edge)" : "")},[
+      h("span",{cls:"num",text:"0" + (i+1)}),
+      h("div",{cls:"disp",style:"font-size:21px;margin-top:4px",text:x})
+    ]);
+  })));
+  if(r.hashtags.length){
+    box.appendChild(h("div",{style:"margin-top:26px"},[ eyebrow(t("tags")) ]));
+    box.appendChild(h("div",{style:"margin-top:10px"},
+      r.hashtags.map(function(x){ return h("span",{cls:"tag",text:x}); })));
+  }
+  if(r.cta){
+    box.appendChild(h("div",{style:"margin-top:26px"},[ eyebrow(t("cta")) ]));
+    box.appendChild(h("div",{cls:"disp",style:"font-size:23px;margin-top:8px;color:var(--accent-ink)",text:r.cta}));
+  }
+}
+function paneS(box, r){
+  box.appendChild(h("div",{cls:"card"}, r.storyboard.map(function(c){
+    return h("div",{cls:"cut"},[
+      h("span",{cls:"time",text:c.time}),
+      h("span",{},[
+        h("div",{cls:"visual",text:c.visual}),
+        c.shot    ? h("div",{cls:"shot",text:t("lblShot") + " · " + c.shot}) : null,
+        c.caption ? h("div",{cls:"capt",text:t("lblCapt") + " · " + c.caption}) : null,
+        c.voice   ? h("div",{cls:"voice",text:t("lblVoice") + " · " + c.voice}) : null
+      ])
+    ]);
+  })));
+}
+function paneC(box, r){
+  var caps = r.storyboard.map(function(c){ return c.caption; }).filter(Boolean);
+  box.appendChild(h("div",{cls:"card"}, caps.map(function(x,i){
+    return h("div",{cls:"step"},[
+      h("span",{cls:"num",text:String(i+1)}),
+      h("span",{cls:"disp",style:"font-size:17px",text:x})
+    ]);
+  })));
+  var b = h("button",{cls:"ghost",style:"margin-top:12px",text:t("captionAll"),
+    on:{click:function(){ if(copyText(caps.join("\n"))) flash(b, t("copied"), t("captionAll")); }}});
+  box.appendChild(b);
+}
+function paneT(box, r){
+  box.appendChild(h("div",{cls:"card"}, r.storyboard.map(function(c,i){
+    return h("div",{cls:"cut"},[
+      h("span",{cls:"time",text:t("lblCut") + " " + (i+1)}),
+      h("span",{},[
+        h("div",{cls:"visual",text:c.visual}),
+        c.shot ? h("div",{cls:"shot",text:c.shot}) : null
+      ])
+    ]);
+  })));
+  if(r.props.length){
+    box.appendChild(h("div",{style:"margin-top:26px"},[ eyebrow(t("props")) ]));
+    box.appendChild(h("div",{style:"margin-top:10px"},
+      r.props.map(function(x){ return h("span",{cls:"tag",text:x}); })));
+  }
+  if(r.shootTips.length){
+    box.appendChild(h("div",{style:"margin-top:26px"},[ eyebrow(t("tips")) ]));
+    box.appendChild(h("div",{cls:"card",style:"margin-top:10px"}, r.shootTips.map(function(x,i){
+      return h("div",{cls:"step"},[ h("span",{cls:"num",text:String(i+1)}), h("span",{text:x}) ]);
+    })));
+  }
+}
+function paneE(box, r){
+  [["capcut",t("capcut")],["vllo",t("vllo")]].forEach(function(p,idx){
+    var list = r.edit[p[0]];
+    if(!list.length) return;
+    box.appendChild(h("div",{style:idx ? "margin-top:26px" : ""},[ eyebrow(p[1]) ]));
+    box.appendChild(h("div",{cls:"card",style:"margin-top:10px"}, list.map(function(x,i){
+      return h("div",{cls:"step"},[ h("span",{cls:"num",text:String(i+1)}), h("span",{text:x}) ]);
+    })));
+  });
+}
+
+/* =========================================================
+   8) 시작 — 링크에 결과가 들어 있으면 바로 펼친다
+   ========================================================= */
+document.getElementById("langKo").addEventListener("click", function(){ S.lang = "ko"; saveLang(); render(); });
+document.getElementById("langEn").addEventListener("click", function(){ S.lang = "en"; saveLang(); render(); });
+
+(function boot(){
+  /* 지난번에 고른 말로 엽니다. 처음 오신 분은 브라우저 말을 따릅니다. */
+  S.lang = loadLang();
+  try{ document.documentElement.lang = S.lang; }catch(e){}
+
+  var hash = "";
+  try{ hash = location.hash || ""; }catch(e){}
+  if(hash.indexOf("#r=") === 0){
+    /* 잠긴 결과라면 열쇠번호를 받아야 하므로 결과 여는 화면으로 데려갑니다. */
+    S.code = hash;
+    if(isLocked(hash)){
+      S.askPin = true; S.screen = "openCode"; render(); return;
+    }
+    unpack(hash).then(function(r){
+      if(r.ok){ S.result = r.ok; S.tab = "plan"; S.screen = "done"; }
+      else { S.screen = "openCode"; S.err = t("errCode"); }
+      render();
+    });
+    render();
+    return;
+  }
+  render();
+})();
+</script>
