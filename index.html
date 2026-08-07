@@ -292,11 +292,12 @@ textarea:focus,input:focus,button:focus-visible,summary:focus-visible,a:focus-vi
   border:1.5px solid var(--edge); color:var(--accent-ink); border-radius:999px;
   padding:8px 16px; font-size:13px; font-weight:800;}
 .badge b{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent);}
-.display{font-family:var(--disp); font-weight:900; letter-spacing:-.045em; line-height:1.06;
+.display{font-family:var(--disp); font-weight:900; letter-spacing:-.045em; line-height:1.0;
   font-size:clamp(38px,6.6vw,80px); margin:22px 0 0;}
-/* 문장 하나가 한 줄씩. 좁은 화면에서는 어쩔 수 없이 접히지만 문장끼리는 안 섞입니다 */
+/* 문장 하나가 한 줄씩. 좁은 화면에서는 어쩔 수 없이 접히지만 문장끼리는 안 섞입니다.
+   두 줄 사이 틈은 0 — 한 덩어리로 읽히게 바짝 붙입니다. */
 .display .line{display:block; text-wrap:balance;}
-.display .line + .line{margin-top:.1em;}
+.display .line + .line{margin-top:0;}
 /* 강조하고 싶은 낱말에 형광펜을 칠합니다.
    글자 뒤에 그림을 깔지 않고 '배경 그림'으로 칠해야 어떤 바탕에서도 안 가려집니다. */
 .hl{color:var(--accent-ink); white-space:nowrap; padding:0 .06em;
