@@ -87,15 +87,15 @@ const 앱 = 이름표.app;
 const 글 = 앱.textContent;
 console.log("\n[ 첫 화면 · 한국어 ]");
 확인("화면이 그려짐", 앱.children.length > 0, 앱.children.length + "덩이");
-확인("큰 제목", 글.includes("사장님은 이야기만 하세요"));
-확인("설명 글", 글.includes("광고 문구 3안"));
-확인("받는 것 다섯 칸", ["광고 문구 3안","컷마다 촬영 지시","화면에 얹을 자막","찍기 전 준비물","편집 순서"]
+확인("큰 제목", 글.includes("가게 이야기만 적어주세요"));
+확인("설명 글", 글.includes("완성된 광고 영상을 만들어"));
+확인("받는 것 다섯 칸", ["완성된 광고 영상","자막이 이미 얹혀 있음","같이 올릴 광고 문구","해시태그","마음에 안 들면 다시"]
   .every(x => 글.includes(x)));
-확인("진행 순서 네 걸음", 글.includes("가게 이야기를 적습니다") && 글.includes("결과를 받습니다"));
-확인("자주 묻는 질문", 글.includes("정말 무료인가요?") && 글.includes("외국인 사장님도"));
+확인("진행 순서 네 걸음", 글.includes("가게 이야기를 적습니다") && 글.includes("완성된 영상을 받습니다"));
+확인("자주 묻는 질문", 글.includes("정말 무료인가요?") && 글.includes("제가 찍어야 하나요?"));
 확인("바닥글", 글.includes("소상공인 광고 영상 제작 대행"));
 확인("운영실 문", 글.includes("운영실"));
-확인("상표 이름 road", 글.includes("광고는 road가") && 글.includes("road를 만든 이유") && 글.includes("road · 소상공인"));
+확인("상표 이름 road", 글.includes("광고 영상은 road가") && 글.includes("road를 만든 이유") && 글.includes("road · 소상공인"));
 확인("옛 이름 안 남음", !/(^|[^가-힣])길([^가-힣이]|$)/.test(글.replace(/영상 길이|길이/g,"")), 0);
 확인("넓은 화면 모드", 이름표.wrap.className === "wrap home", 이름표.wrap.className);
 확인("위쪽 메뉴 4개", 이름표.navlinks.children.length === 4);
@@ -118,11 +118,21 @@ console.log("\n[ 첫 화면 · 영어 ]");
 상자.S.lang = "en";
 상자.render();
 const 영 = 이름표.app.textContent;
-확인("영어 큰 제목", 영.includes("You tell the story"));
-확인("영어 카드", 영.includes("Three ad scripts") && 영.includes("Editing order"));
-확인("영어 질문", 영.includes("Is it really free?"));
+확인("영어 큰 제목", 영.includes("Just tell us about your shop"));
+확인("영어 카드", 영.includes("A finished ad video") && 영.includes("Hashtags"));
+확인("영어 질문", 영.includes("Is it really free?") && 영.includes("Do I have to film it?"));
 확인("영어 메뉴", 이름표.navcta.textContent === "Start free");
 확인("한국어 안 섞임", !/[가-힣]/.test(영), 영.match(/[가-힣]+/g) ? "남은 한글 " + 영.match(/[가-힣]+/g).slice(0,5).join(",") : "");
+
+
+/* ---------- '사장님이 찍는다' 는 옛 메시지가 남아 있지 않은지 ---------- */
+console.log("\n[ 서비스 설명이 바뀐 대로인가 ]");
+상자.S.lang = "ko"; 상자.go("intro");
+const 본문 = 이름표.app.textContent;
+const 옛말 = ["찍는 건 사장님","따라 찍기","촬영 지시","준비물","편집 순서","캡컷","블로"];
+const 남음 = 옛말.filter(x => 본문.includes(x));
+확인("옛 설명 안 남음", 남음.length === 0, 남음.join(","));
+확인("만들어 준다고 씀", 본문.includes("만들어 드립니다") && 본문.includes("촬영도 편집도"));
 
 console.log("\n" + (실패 ? "★ " + 실패 + "곳이 잘못됐습니다" : "모두 통과 · 화면이 정상으로 그려집니다"));
 process.exit(실패 ? 1 : 0);
