@@ -64,7 +64,7 @@ console.log("30) 없는 낱말 부름 :", 없음.length ? "발견 " + 없음.joi
 // 31~34 : 외국인 손님과 진짜 주소
 const site = (js.match(/var SITE_URL = "([^"]*)"/) || [])[1];
 console.log("31) 진짜 주소      :", site ? "통과 · " + site : "안 정해짐 · 결과 링크 못 씀");
-console.log("32) 영어 신청서    :", /\[GIL REQUEST\]/.test(js) ? "통과 · 영어로도 받고 읽음" : "실패");
+console.log("32) 영어 신청서    :", /\[ROAD REQUEST\]/.test(js) && /\[GIL REQUEST\]/.test(js) ? "통과 · 영어로도 받고, 옛 이름 신청서도 읽음" : "실패");
 console.log("33) 영어 지시문    :", /Write everything in English/.test(js) ? "통과 · 결과도 영어로 나옴" : "실패");
 console.log("34) 말 기억하기    :", /function loadLang/.test(js) ? "통과 · 다시 와도 그 말로 열림" : "실패");
 
@@ -99,3 +99,62 @@ console.log("41) 자물쇠 모양     :", !opLock ? "아직 안 정함"
   : /^v1:[A-Za-z0-9_-]{22}:[A-Za-z0-9_-]{43}$/.test(opLock)
     ? "통과 · 소금 16바이트 + 되섞은값 32바이트"
     : "★ 모양이 이상합니다. 운영실에서 다시 만드세요");
+
+/* =========================================================
+   42~50 : "남이 와서 써도 되는 사이트인가"를 봅니다
+   여기 하나라도 빠지면, 만든 사람 컴퓨터에서는 멀쩡해 보여도
+   손님 휴대폰에서는 글씨가 개미만 하게 나오거나
+   카톡에 주소를 붙여도 아무 그림이 안 떠서 안 눌립니다.
+   ========================================================= */
+const head = t.slice(0, t.indexOf("</head>"));
+
+console.log("42) 휴대폰 화면    :",
+  /<meta[^>]+name="viewport"[^>]+width=device-width/.test(head)
+    ? "통과 · 휴대폰 크기에 맞춰 보임" : "★ 없음 · 휴대폰에서 글씨가 개미만 해집니다");
+
+console.log("43) 문서 시작 표시 :",
+  /^\s*<!doctype html>/i.test(t) && /<html lang="ko"/.test(t)
+    ? "통과 · 표준 모드 + 언어 표시" : "★ 없음 · 브라우저가 옛날 방식으로 그립니다");
+
+console.log("44) 검색 설명      :",
+  /<meta[^>]+name="description"[^>]+content="[^"]{40,}"/.test(head)
+    ? "통과 · 검색에 설명이 나옴" : "★ 없음 · 검색 결과에 제목만 덩그러니 나옴");
+
+const og = ["og:title", "og:description", "og:image", "og:url", "og:type"]
+  .filter(k => !head.includes('property="' + k + '"'));
+console.log("45) 카톡 미리보기  :",
+  og.length ? "★ 빠짐 " + og.join(",") : "통과 · 주소를 붙이면 그림 카드가 뜸");
+
+console.log("46) 미리보기 그림  :",
+  fs.existsSync("og.png") ? "통과 · og.png 있음 (" + (fs.statSync("og.png").size / 1024).toFixed(0) + " KB)"
+    : "★ og.png 파일이 없습니다 · 카톡에 그림이 안 뜹니다");
+
+console.log("47) 탭 그림·띠색   :",
+  /rel="icon"/.test(head) && /name="theme-color"/.test(head)
+    ? "통과 · 탭 그림과 위쪽 띠 색 있음" : "★ 없음");
+
+console.log("48) 글자 칸 크기   :",
+  /input\[type=password\]\{[\s\S]{0,200}?font-size:16px/.test(t) ||
+  /textarea,input\[type=text\],input\[type=password\]\{[\s\S]{0,260}?font-size:16px/.test(t)
+    ? "통과 · 아이폰이 칸을 눌러도 확대 안 함" : "★ 16px 미만 · 아이폰이 화면을 확대해 버립니다");
+
+console.log("49) 소개 페이지    :",
+  /SCREENS\.intro/.test(js) && /cls:"hero"/.test(js) && /faqItem\(/.test(js) && /cls:"footer"/.test(js)
+    ? "통과 · 첫 화면 · 자주 묻는 질문 · 바닥글 있음" : "★ 소개 페이지가 비어 있습니다");
+
+// 손가락으로 누르는 것은 44px 아래로 내려가면 안 됩니다
+const small = [...t.matchAll(/min-height:(\d+)px/g)].map(m => +m[1]).filter(n => n < 38);
+console.log("50) 누를 자리 크기 :",
+  small.length ? "★ 너무 작은 단추 " + small.join(",") + "px" : "0건 · 손가락으로 누를 만함");
+
+// 51~52 : 이름을 「길」에서 road 로 바꾼 뒤 빠뜨린 곳이 없는지
+const 브랜드 = /brandName:"road"/g;
+console.log("51) 상표 이름      :",
+  (js.match(브랜드) || []).length === 2 ? "통과 · 한국어·영어 모두 road"
+    : "★ 한쪽이 아직 옛 이름입니다");
+
+// 열쇠를 만드는 속 이름은 절대 바뀌면 안 됩니다. 바뀌면 이미 보낸 결과가 안 열립니다.
+console.log("52) 열쇠 속 이름   :",
+  /"길:"/.test(js) && /"길자물쇠:"/.test(js)
+    ? "통과 · 건드리지 않음 (이미 보낸 결과와 비밀번호가 그대로 열림)"
+    : "★ 위험 · 이미 보낸 결과와 운영실 비밀번호가 모두 안 열리게 됩니다");
