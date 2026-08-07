@@ -134,5 +134,62 @@ const 남음 = 옛말.filter(x => 본문.includes(x));
 확인("옛 설명 안 남음", 남음.length === 0, 남음.join(","));
 확인("만들어 준다고 씀", 본문.includes("만들어 드립니다") && 본문.includes("촬영도 편집도"));
 
+
+/* ---------- 결과 화면 : 사장님이 실제로 보는 화면 ---------- */
+console.log("\n[ 결과 화면 ]");
+상자.S.lang = "ko";
+// 클로드가 내주는 답과 같은 모양의 가짜 결과를 하나 만들어 넣습니다
+상자.S.result = {
+  brandLine: "12년 된 손칼국수집",
+  headlines: ["새벽에 낸 육수", "점심 한 그릇", "12년째 같은 자리"],
+  storyboard: [
+    { time:"0-3초", visual:"육수 끓는 솥", caption:"매일 새벽 4시", voice:"" },
+    { time:"3-8초", visual:"칼국수 담는 손", caption:"12년째 그대로", voice:"" }
+  ],
+  props: ["앞치마"], shootTips: ["가까이 찍기"],
+  edit: { capcut:["자르기"], vllo:[] },
+  hashtags: ["#일산맛집", "#손칼국수"],
+  cta: "점심에 들러주세요"
+};
+상자.S.req = null;
+
+[["plan","광고 문구"],["caption","자막"],["tags","해시태그"]].forEach(function(칸){
+  try{
+    상자.S.tab = 칸[0];
+    상자.go("done");
+    var 글 = 이름표.app.textContent;
+    확인(칸[1] + " 칸", 이름표.app.children.length > 0 && 글.length > 20);
+  }catch(e){ 확인(칸[1] + " 칸", false, e.message); }
+});
+
+상자.S.tab = "plan"; 상자.go("done");
+var 결과글 = 이름표.app.textContent;
+확인("광고 문구 3안 나옴", 결과글.includes("새벽에 낸 육수") && 결과글.includes("12년째 같은 자리"));
+확인("촬영·편집 칸 없어짐", !결과글.includes("촬영 목록") && !결과글.includes("편집") && !결과글.includes("준비물"));
+
+// 카톡에 그대로 보내는 글에도 촬영·편집이 빠졌는지
+var 보낼글 = 상자.resultToText(상자.S.result);
+확인("보낼 글에 문구·자막·해시태그", 보낼글.includes("광고 문구") && 보낼글.includes("자막만") && 보낼글.includes("해시태그"));
+확인("보낼 글에 촬영·편집 없음",
+  !보낼글.includes("촬영") && !보낼글.includes("준비물") && !보낼글.includes("캡컷") && !보낼글.includes("대본"),
+  보낼글.match(/촬영|준비물|캡컷|대본/g) ? "남음 " + 보낼글.match(/촬영|준비물|캡컷|대본/g).join(",") : "");
+
+// 클로드에게 보내는 지시문도 촬영·편집을 더 이상 시키지 않는지
+var 지시문 = 상자.buildPrompt ? 상자.buildPrompt({ tier:"d1", sec:"30", brief:"칼국수집" }) : "";
+if(지시문){
+  확인("지시문에 촬영·편집 안 시킴",
+    !지시문.includes("shootTips") && !지시문.includes("props") && !지시문.includes("capcut"));
+}
+
+/* ---------- 가게 사진 안내가 들어갔는지 ---------- */
+console.log("\n[ 가게 사진 안내 ]");
+상자.go("brief");
+확인("적는 화면에 안내", 이름표.app.textContent.includes("가게 사진 3~4장"));
+상자.S.sheet = "[road 신청서]\n납기: 하루\n길이: 30초\n연락처: -\n설명:\n칼국수집";
+상자.go("sheet");
+확인("보내는 화면에 안내", 이름표.app.textContent.includes("가게 사진 3~4장"));
+확인("안 보내도 된다는 말 유지", 이름표.app.textContent.includes("안 보내셔도 영상은 나옵니다"));
+상자.go("intro");
+
 console.log("\n" + (실패 ? "★ " + 실패 + "곳이 잘못됐습니다" : "모두 통과 · 화면이 정상으로 그려집니다"));
 process.exit(실패 ? 1 : 0);

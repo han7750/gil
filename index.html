@@ -292,8 +292,11 @@ textarea:focus,input:focus,button:focus-visible,summary:focus-visible,a:focus-vi
   border:1.5px solid var(--edge); color:var(--accent-ink); border-radius:999px;
   padding:8px 16px; font-size:13px; font-weight:800;}
 .badge b{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent);}
-.display{font-family:var(--disp); font-weight:900; letter-spacing:-.045em; line-height:.98;
-  font-size:clamp(44px,7.4vw,88px); margin:22px 0 0; text-wrap:balance;}
+.display{font-family:var(--disp); font-weight:900; letter-spacing:-.045em; line-height:1.06;
+  font-size:clamp(38px,6.6vw,80px); margin:22px 0 0;}
+/* 문장 하나가 한 줄씩. 좁은 화면에서는 어쩔 수 없이 접히지만 문장끼리는 안 섞입니다 */
+.display .line{display:block; text-wrap:balance;}
+.display .line + .line{margin-top:.1em;}
 /* 강조하고 싶은 낱말에 형광펜을 칠합니다.
    글자 뒤에 그림을 깔지 않고 '배경 그림'으로 칠해야 어떤 바탕에서도 안 가려집니다. */
 .hl{color:var(--accent-ink); white-space:nowrap; padding:0 .06em;
@@ -447,6 +450,9 @@ ko:{
 
   /* ---- 소개 페이지 (기업 사이트처럼 만든 첫 화면) ---- */
   brandName:"road",
+  photoTip:"가게 사진 3~4장을 같이 보내주시면 훨씬 좋습니다",
+  photoNote:"안 보내셔도 영상은 나옵니다. 다만 사진이 있으면 '어느 가게나 비슷한 영상'이 아니라 사장님 가게다운 영상이 됩니다. 간판, 대표 메뉴, 가게 안 풍경이면 충분합니다.",
+  noTags:"해시태그가 없습니다.", tagsAll:"해시태그 모아 복사",
   navHow:"진행 순서", navGet:"받는 것", navWhy:"왜 무료인가", navFaq:"자주 묻는 질문",
   navCta:"무료로 신청",
   heroBadge:"지금은 모든 신청이 무료입니다",
@@ -467,7 +473,7 @@ ko:{
   g2t:"자막이 이미 얹혀 있음",
   g2d:"소리를 꺼도 무슨 가게인지 읽힙니다. 요즘은 대부분 소리 없이 넘겨 보기 때문입니다.",
   g3t:"같이 올릴 광고 문구",
-  g3d:"영상 밑에 적을 글까지 써 드립니다. 짧게 치는 것과 정성껏 쓴 것 두 가지로 드리니 골라 쓰세요.",
+  g3d:"영상 밑에 적을 글을 세 가지로 써 드립니다. 짧게 치는 것, 마음을 건드리는 것, 정보를 또박또박 주는 것. 마음에 드는 걸 고르세요.",
   g4t:"해시태그",
   g4d:"어떤 말을 달아야 손님이 찾아오는지 골라서 함께 보내드립니다. 그대로 붙여 넣으시면 됩니다.",
   g5t:"마음에 안 들면 다시",
@@ -482,7 +488,7 @@ ko:{
   h2t:"신청서를 보냅니다",
   h2d:"단추를 누르면 신청서가 저절로 만들어집니다. 복사해서 카카오톡으로 보내주시면 끝입니다.",
   h3t:"제가 영상을 만듭니다",
-  h3d:"보내주신 이야기를 읽고 영상을 처음부터 끝까지 만듭니다. 쓸 소재도 제가 준비하니 사장님은 아무것도 보내지 않으셔도 됩니다.",
+  h3d:"보내주신 이야기를 읽고 영상을 처음부터 끝까지 만듭니다. 소재도 제가 준비하니 사장님은 아무것도 보내지 않으셔도 됩니다. 가게 사진을 몇 장 더해주시면 더 사장님 가게다워집니다.",
   h4t:"완성된 영상을 받습니다",
   h4d:"약속한 시간 안에 카카오톡으로 영상이 갑니다. 받아서 그대로 올리시면 끝입니다.",
 
@@ -505,7 +511,7 @@ ko:{
   q5:"제 가게 이야기가 남에게 보이나요?",
   a5:"결과는 잠긴 채로 나갑니다. 여는 열쇠번호 네 자리는 결과와 따로 보내드리기 때문에, 결과만 주워도 열지 못합니다.",
   q6:"가게 사진이나 영상을 보내야 하나요?",
-  a6:"안 보내셔도 됩니다. 영상에 쓸 소재는 제가 준비합니다. 다만 꼭 넣고 싶은 사진이 있으시면 함께 보내주셔도 좋습니다.",
+  a6:"안 보내셔도 됩니다. 소재는 제가 준비합니다. 다만 가게 사진 3~4장(간판·대표 메뉴·가게 안 풍경)을 같이 보내주시면, 어느 가게나 비슷한 영상이 아니라 사장님 가게다운 영상이 되어 훨씬 좋습니다.",
   q7:"어떤 가게든 되나요?",
   a7:"네. 음식점, 미용실, 공방, 학원, 무엇이든 괜찮습니다. 파는 것과 자랑거리만 알려주시면 됩니다.",
   q8:"외국인 사장님도 신청할 수 있나요?",
@@ -699,6 +705,9 @@ en:{
 
   /* ---- Landing page ---- */
   brandName:"road",
+  photoTip:"Sending 3-4 photos of your shop makes it much better",
+  photoNote:"The video still gets made without them. But with photos it looks like your shop rather than any shop. The sign, your signature item and the inside is plenty.",
+  noTags:"No hashtags.", tagsAll:"Copy all hashtags",
   navHow:"How it works", navGet:"What you get", navWhy:"Why free", navFaq:"FAQ",
   navCta:"Start free",
   heroBadge:"Every request is free right now",
@@ -719,7 +728,7 @@ en:{
   g2t:"Captions already burned in",
   g2d:"It reads fine with the sound off, which is how most people will scroll past it.",
   g3t:"Copy to post with it",
-  g3d:"The text that goes under the video, written for you. A short punchy version and a warmer one — take your pick.",
+  g3d:"The text that goes under the video, in three versions — punchy, warm, and straight to the facts. Take your pick.",
   g4t:"Hashtags",
   g4d:"The tags that actually bring people to a shop like yours, picked out and ready to paste.",
   g5t:"Changes are free too",
@@ -734,7 +743,7 @@ en:{
   h2t:"Send the request",
   h2d:"One tap builds the request form for you. Copy it and send it over chat — that is the whole step.",
   h3t:"We make the video",
-  h3d:"We read your story and build the whole thing end to end. We source the footage too, so you send us nothing.",
+  h3d:"We read your story and build the whole thing end to end. We source the footage too, so you need send us nothing — though a few photos of your shop make it noticeably more yours.",
   h4t:"Get the finished video",
   h4d:"It arrives in your chat within the promised time. Download it and post it — that is the whole thing.",
 
@@ -757,7 +766,7 @@ en:{
   q5:"Can anyone else see my shop details?",
   a5:"Your result goes out locked. The four-digit key travels separately, so finding the result alone will not open it.",
   q6:"Do I need to send photos or clips of my shop?",
-  a6:"You do not. We source what the video needs. If there is a particular photo you want in it, you are welcome to send that along.",
+  a6:"You do not have to. We source what the video needs. That said, 3-4 photos — the sign, your signature item, the inside — make it look like your shop rather than any shop. Well worth the minute it takes.",
   q7:"Does it work for any kind of shop?",
   a7:"Yes. Restaurants, salons, studios, tutors — anything. Just tell us what you sell and what you are proud of.",
   q8:"I do not speak Korean. Can I still use it?",
@@ -1317,8 +1326,9 @@ function buildPrompt(req){
   if(req.lang === "en"){
     return [
 "You are an advertising planner for small local businesses.",
-"Read the shop owner's description below and build a short ad video plan",
-"they can make right away with a free editing app like CapCut or VLLO.",
+"Read the shop owner's description below and plan a short ad video.",
+"We produce the finished video ourselves and hand it over ready to post.",
+"The owner never films or edits anything, so do not write camera or editing directions.",
 "",
 "Depth: " + TIERS[req.tier].depthEn,
 "Video length: " + req.sec + " seconds",
@@ -1332,11 +1342,8 @@ req.brief,
 '  "brandLine": "one line that defines this shop",',
 '  "headlines": ["headline 1","headline 2","headline 3"],',
 '  "storyboard": [',
-'    {"time":"0-3 sec","visual":"what is on screen","shot":"how to hold the camera","caption":"on-screen caption","voice":"spoken line (empty string if none)"}',
+'    {"time":"0-3 sec","visual":"what is on screen","caption":"on-screen caption","voice":"spoken line (empty string if none)"}',
 "  ],",
-'  "props": ["things to prepare"],',
-'  "shootTips": ["shooting tips"],',
-'  "edit": { "capcut": ["steps in CapCut"], "vllo": ["steps in VLLO"] },',
 '  "hashtags": ["#tag"],',
 '  "cta": "one closing sentence"',
 "}",
@@ -1344,10 +1351,8 @@ req.brief,
 "Rules:",
 "- storyboard must be exactly " + cuts + " cuts, totalling " + req.sec + " seconds.",
 "- caption must be under 30 characters, readable at a glance.",
-"- shot must be something they can follow immediately: 'close up / wide / from above / slow pan / locked off'.",
-"- props: at most 6, only things the shop is likely to already have.",
-"- edit.capcut and edit.vllo: at most 6 lines each, in the order they tap them.",
-"- shootTips: exactly 3. hashtags: at most 6.",
+"- Never write camera directions, prop lists or editing steps. We handle production.",
+"- hashtags: at most 6.",
 "- Never use superlatives (best, number one, only, cheapest).",
 "- Never claim health or performance effects without evidence.",
 "- Keep every sentence short and concrete.",
@@ -1357,8 +1362,9 @@ req.brief,
 
   return [
 "당신은 한국 소상공인 전문 광고 기획자입니다.",
-"아래 사장님 설명을 읽고, 캡컷이나 블로 같은 무료 편집 앱으로 바로 만들 수 있는",
-"짧은 광고 영상 제작안을 만들어 주세요.",
+"아래 사장님 설명을 읽고 짧은 광고 영상을 기획해 주세요.",
+"영상은 우리가 직접 만들어 완성본으로 사장님께 드립니다.",
+"사장님은 찍지도 편집하지도 않으므로, 촬영 방법이나 편집 순서는 쓰지 마세요.",
 "",
 "작업 수준: " + TIERS[req.tier].depth,
 "영상 길이: " + req.sec + "초",
@@ -1372,11 +1378,8 @@ req.brief,
 '  "brandLine": "이 가게를 한 줄로 정의",',
 '  "headlines": ["광고문구1","광고문구2","광고문구3"],',
 '  "storyboard": [',
-'    {"time":"0-3초","visual":"화면에 보이는 것","shot":"카메라를 어떻게 두는지","caption":"화면에 뜨는 자막","voice":"말소리 대사 (없으면 빈 문자열)"}',
+'    {"time":"0-3초","visual":"화면에 보이는 것","caption":"화면에 뜨는 자막","voice":"말소리 대사 (없으면 빈 문자열)"}',
 "  ],",
-'  "props": ["준비물"],',
-'  "shootTips": ["촬영 요령"],',
-'  "edit": { "capcut": ["캡컷에서 할 일"], "vllo": ["블로에서 할 일"] },',
 '  "hashtags": ["#태그"],',
 '  "cta": "마지막에 띄울 한 문장"',
 "}",
@@ -1384,10 +1387,8 @@ req.brief,
 "규칙:",
 "- storyboard는 정확히 " + cuts + "컷, 시간 합계 " + req.sec + "초.",
 "- caption은 16자 이내. 화면에서 한눈에 읽히는 말로.",
-"- shot에는 '가까이 / 멀리 / 위에서 / 천천히 옆으로 / 고정' 처럼 바로 따라 할 수 있는 지시를 쓰세요.",
-"- props는 가게에 이미 있을 법한 것만 6개 이내.",
-"- edit의 capcut·vllo는 각각 앱 안에서 누를 것을 순서대로 6줄 이내.",
-"- shootTips는 3개. hashtags는 6개 이내.",
+"- 촬영 방법·준비물·편집 순서는 절대 쓰지 마세요. 만드는 것은 우리가 합니다.",
+"- hashtags는 6개 이내.",
 "- 과장 표현(최고, 1등, 유일, 최저가)은 쓰지 마세요.",
 "- 근거 없는 효능·효과 표현은 쓰지 마세요.",
 "- 모든 문장은 짧고 구체적으로."
@@ -1732,22 +1733,12 @@ function resultToText(r){
     capcut:"[캡컷 편집 순서]", vllo:"[블로 편집 순서]", tags:"[해시태그] ", cta:"[마지막 한 줄] "
   };
 
+  /* 영상은 파일로 따로 보내드리므로, 이 글에는 같이 올릴 것만 담습니다.
+     촬영 방법·준비물·편집 순서는 사장님이 할 일이 아니라서 넣지 않습니다. */
   L.push(W.brand + r.brandLine, "");
   L.push(W.head); r.headlines.forEach(function(x,i){ L.push((i+1) + ". " + x); }); L.push("");
-  L.push(W.script);
-  r.storyboard.forEach(function(c,i){
-    L.push((i+1) + ") " + c.time);
-    L.push(W.scene + c.visual);
-    if(c.shot) L.push(W.shot + c.shot);
-    if(c.caption) L.push(W.capt + c.caption);
-    if(c.voice) L.push(W.voice + c.voice);
-  });
-  L.push("");
-  L.push(W.caps); r.storyboard.forEach(function(c){ if(c.caption) L.push(c.caption); }); L.push("");
-  if(r.props.length){ L.push(W.props); r.props.forEach(function(x){ L.push("- " + x); }); L.push(""); }
-  if(r.shootTips.length){ L.push(W.tips); r.shootTips.forEach(function(x){ L.push("- " + x); }); L.push(""); }
-  if(r.edit.capcut.length){ L.push(W.capcut); r.edit.capcut.forEach(function(x,i){ L.push((i+1) + ". " + x); }); L.push(""); }
-  if(r.edit.vllo.length){ L.push(W.vllo); r.edit.vllo.forEach(function(x,i){ L.push((i+1) + ". " + x); }); L.push(""); }
+  var caps = r.storyboard.map(function(c){ return c.caption; }).filter(Boolean);
+  if(caps.length){ L.push(W.caps); caps.forEach(function(x){ L.push(x); }); L.push(""); }
   if(r.hashtags.length) L.push(W.tags + r.hashtags.join(" "));
   if(r.cta) L.push(W.cta + r.cta);
   return L.join("\n");
@@ -2279,10 +2270,15 @@ SCREENS.intro = function(app){
   app.appendChild(h("section",{cls:"hero"},[
     h("div",{cls:"heroIn"},[
       h("span",{cls:"badge"},[ h("b",{"aria-hidden":"true"}), h("span",{text:t("heroBadge")}) ]),
+      /* 문장 하나가 한 줄씩 오도록 줄을 나눕니다.
+         화면 폭에 따라 저절로 접히게 두면 "가게 이야기만 적어주세요. 광고" 처럼
+         엉뚱한 데서 잘려서 읽기 나빠집니다. */
       h("h1",{cls:"display"},[
-        h("span",{text:t("heroA") + " "}),
-        h("span",{cls:"hl",text:t("heroHl")}),
-        h("span",{text:" " + t("heroB")})
+        h("span",{cls:"line",text:t("heroA")}),
+        h("span",{cls:"line"},[
+          h("span",{cls:"hl",text:t("heroHl")}),
+          h("span",{text:" " + t("heroB")})
+        ])
       ]),
       h("p",{cls:"heroSub",text:t("heroSub")}),
       h("div",{cls:"heroCta"},[
@@ -2460,6 +2456,12 @@ SCREENS.brief = function(app){
     h("h2",{cls:"disp h2",text:t("s2")}),
     h("p",{cls:"sub",style:"margin-bottom:16px",text:t("s2sub")}),
     ta,
+    /* 사진은 '있으면 더 좋은 것'이지 '있어야 하는 것'이 아닙니다.
+       순서를 이렇게 둬야 사장님이 부담을 느끼지 않습니다. */
+    h("div",{cls:"card",style:"margin-top:14px"},[
+      h("div",{cls:"disp",style:"font-size:16px",text:"📷 " + t("photoTip")}),
+      h("p",{cls:"note",style:"margin-top:6px",text:t("photoNote")})
+    ]),
     h("div",{style:"margin-top:20px"},[ eyebrow(t("len")) ]),
     h("div",{style:"margin-top:8px"},[ lenRow ]),
     h("div",{style:"margin-top:20px"},[ eyebrow(t("who")) ]),
@@ -2487,6 +2489,11 @@ SCREENS.sheet = function(app){
     h("div",{cls:"stack",style:"margin-top:14px"},[ cbtn ]),
     h("div",{style:"margin-top:28px"},[ eyebrow(t("sendTo")) ]),
     contactBlock(),
+    /* 카톡 창을 여는 바로 이 자리에 둬야 사진을 같이 보내게 됩니다 */
+    h("div",{cls:"card",style:"margin-top:12px"},[
+      h("div",{cls:"disp",style:"font-size:16px",text:"📷 " + t("photoTip")}),
+      h("p",{cls:"note",style:"margin-top:6px",text:t("photoNote")})
+    ]),
     h("div",{style:"margin-top:28px"},[ eyebrow(t("after")) ]),
     afterBlock(),
     h("div",{cls:"stack",style:"margin-top:18px"},[
@@ -2848,14 +2855,15 @@ SCREENS.opSend = function(app){
 /* ---------- 결과 5탭 ---------- */
 SCREENS.done = function(app){
   var r = S.result;
-  var tabs = [["plan",t("tabPlan")],["script",t("tabScript")],["caption",t("tabCaption")],
-              ["shot",t("tabShot")],["edit",t("tabEdit")]];
+  /* 영상은 완성본으로 따로 보내드리므로, 여기에는 같이 올릴 것만 둡니다.
+     촬영 목록·준비물·편집 순서는 사장님이 할 일이 아니라서 뺐습니다. */
+  var tabs = [["plan",t("headlines")],["caption",t("tabCaption")],["tags",t("tags")]];
   var bar = h("div",{cls:"tabs",role:"tablist"}, tabs.map(function(x){
     return h("button",{role:"tab","aria-selected":S.tab === x[0],text:x[1],
       on:{click:function(){ S.tab = x[0]; render(); }}});
   }));
   var body = h("div",{style:"margin-top:20px"});
-  ({ plan:paneP, script:paneS, caption:paneC, shot:paneT, edit:paneE })[S.tab](body, r);
+  ({ plan:paneP, caption:paneC, tags:paneG })[S.tab || "plan"](body, r);
 
   app.appendChild(h("div",{style:"padding-top:32px"},[
     h("div",{cls:"plate",style:"margin-bottom:16px",text:t("brandName")}),
@@ -2863,7 +2871,7 @@ SCREENS.done = function(app){
     bar, body,
     h("div",{cls:"stack",style:"margin-top:30px"},[
       h("button",{cls:"ghost",text:t("download"),on:{click:function(e){
-        saveText("road-제작안.txt", resultToText(r), e.target);
+        saveText("road-광고자료.txt", resultToText(r), e.target);
       }}}),
       h("button",{cls:"ghost",text:t("back"),on:{click:function(){
         go(S.req ? "opSend" : "intro");
@@ -2880,28 +2888,10 @@ function paneP(box, r){
       h("div",{cls:"disp",style:"font-size:21px;margin-top:4px",text:x})
     ]);
   })));
-  if(r.hashtags.length){
-    box.appendChild(h("div",{style:"margin-top:26px"},[ eyebrow(t("tags")) ]));
-    box.appendChild(h("div",{style:"margin-top:10px"},
-      r.hashtags.map(function(x){ return h("span",{cls:"tag",text:x}); })));
-  }
   if(r.cta){
     box.appendChild(h("div",{style:"margin-top:26px"},[ eyebrow(t("cta")) ]));
     box.appendChild(h("div",{cls:"disp",style:"font-size:23px;margin-top:8px;color:var(--accent-ink)",text:r.cta}));
   }
-}
-function paneS(box, r){
-  box.appendChild(h("div",{cls:"card"}, r.storyboard.map(function(c){
-    return h("div",{cls:"cut"},[
-      h("span",{cls:"time",text:c.time}),
-      h("span",{},[
-        h("div",{cls:"visual",text:c.visual}),
-        c.shot    ? h("div",{cls:"shot",text:t("lblShot") + " · " + c.shot}) : null,
-        c.caption ? h("div",{cls:"capt",text:t("lblCapt") + " · " + c.caption}) : null,
-        c.voice   ? h("div",{cls:"voice",text:t("lblVoice") + " · " + c.voice}) : null
-      ])
-    ]);
-  })));
 }
 function paneC(box, r){
   var caps = r.storyboard.map(function(c){ return c.caption; }).filter(Boolean);
@@ -2915,37 +2905,18 @@ function paneC(box, r){
     on:{click:function(){ if(copyText(caps.join("\n"))) flash(b, t("copied"), t("captionAll")); }}});
   box.appendChild(b);
 }
-function paneT(box, r){
-  box.appendChild(h("div",{cls:"card"}, r.storyboard.map(function(c,i){
-    return h("div",{cls:"cut"},[
-      h("span",{cls:"time",text:t("lblCut") + " " + (i+1)}),
-      h("span",{},[
-        h("div",{cls:"visual",text:c.visual}),
-        c.shot ? h("div",{cls:"shot",text:c.shot}) : null
-      ])
-    ]);
-  })));
-  if(r.props.length){
-    box.appendChild(h("div",{style:"margin-top:26px"},[ eyebrow(t("props")) ]));
-    box.appendChild(h("div",{style:"margin-top:10px"},
-      r.props.map(function(x){ return h("span",{cls:"tag",text:x}); })));
+/* 해시태그 칸. 그대로 복사해서 게시글에 붙이시면 됩니다. */
+function paneG(box, r){
+  if(!r.hashtags.length){
+    box.appendChild(h("p",{cls:"sub",text:t("noTags")}));
+    return;
   }
-  if(r.shootTips.length){
-    box.appendChild(h("div",{style:"margin-top:26px"},[ eyebrow(t("tips")) ]));
-    box.appendChild(h("div",{cls:"card",style:"margin-top:10px"}, r.shootTips.map(function(x,i){
-      return h("div",{cls:"step"},[ h("span",{cls:"num",text:String(i+1)}), h("span",{text:x}) ]);
-    })));
-  }
-}
-function paneE(box, r){
-  [["capcut",t("capcut")],["vllo",t("vllo")]].forEach(function(p,idx){
-    var list = r.edit[p[0]];
-    if(!list.length) return;
-    box.appendChild(h("div",{style:idx ? "margin-top:26px" : ""},[ eyebrow(p[1]) ]));
-    box.appendChild(h("div",{cls:"card",style:"margin-top:10px"}, list.map(function(x,i){
-      return h("div",{cls:"step"},[ h("span",{cls:"num",text:String(i+1)}), h("span",{text:x}) ]);
-    })));
-  });
+  box.appendChild(h("div",{cls:"card"},
+    r.hashtags.map(function(x){ return h("span",{cls:"tag",text:x}); })));
+  var line = r.hashtags.join(" ");
+  var b = h("button",{cls:"ghost",style:"margin-top:12px",text:t("tagsAll"),
+    on:{click:function(){ if(copyText(line)) flash(b, t("copied"), t("tagsAll")); }}});
+  box.appendChild(b);
 }
 
 /* =========================================================
