@@ -453,6 +453,8 @@ ko:{
   photoTip:"가게 사진 3~4장을 같이 보내주시면 훨씬 좋습니다",
   photoNote:"안 보내셔도 영상은 나옵니다. 다만 사진이 있으면 '어느 가게나 비슷한 영상'이 아니라 사장님 가게다운 영상이 됩니다. 간판, 대표 메뉴, 가게 안 풍경이면 충분합니다.",
   noTags:"해시태그가 없습니다.", tagsAll:"해시태그 모아 복사",
+  videoCopy:"영상에 쓴 문구", videoCopyNote:"이 문구는 이미 영상 안에 들어가 있습니다",
+  postCopy:"게시글에 쓸 문구", postCopyNote:"영상을 올릴 때 밑에 붙이는 글입니다. 마음에 드는 걸 하나 골라 쓰세요",
   navHow:"진행 순서", navGet:"받는 것", navWhy:"왜 무료인가", navFaq:"자주 묻는 질문",
   navCta:"무료로 신청",
   heroBadge:"지금은 모든 신청이 무료입니다",
@@ -708,6 +710,8 @@ en:{
   photoTip:"Sending 3-4 photos of your shop makes it much better",
   photoNote:"The video still gets made without them. But with photos it looks like your shop rather than any shop. The sign, your signature item and the inside is plenty.",
   noTags:"No hashtags.", tagsAll:"Copy all hashtags",
+  videoCopy:"Copy used in the video", videoCopyNote:"This line is already in the video",
+  postCopy:"Copy to post with it", postCopyNote:"The text that goes under the video when you upload. Pick whichever you like",
   navHow:"How it works", navGet:"What you get", navWhy:"Why free", navFaq:"FAQ",
   navCta:"Start free",
   heroBadge:"Every request is free right now",
@@ -1340,7 +1344,8 @@ req.brief,
 "",
 "{",
 '  "brandLine": "one line that defines this shop",',
-'  "headlines": ["headline 1","headline 2","headline 3"],',
+'  "videoCopy": "the one line that appears large inside the video",',
+'  "postCopy": ["caption to post 1","caption to post 2","caption to post 3"],',
 '  "storyboard": [',
 '    {"time":"0-3 sec","visual":"what is on screen","caption":"on-screen caption","voice":"spoken line (empty string if none)"}',
 "  ],",
@@ -1351,6 +1356,9 @@ req.brief,
 "Rules:",
 "- storyboard must be exactly " + cuts + " cuts, totalling " + req.sec + " seconds.",
 "- caption must be under 30 characters, readable at a glance.",
+"- videoCopy is the hook shown inside the video. Keep it under 20 characters.",
+"- postCopy: exactly 3 versions of the text that goes under the post —",
+"  one punchy, one warm, one straight to the facts. 2 to 4 lines each.",
 "- Never write camera directions, prop lists or editing steps. We handle production.",
 "- hashtags: at most 6.",
 "- Never use superlatives (best, number one, only, cheapest).",
@@ -1376,7 +1384,8 @@ req.brief,
 "",
 "{",
 '  "brandLine": "이 가게를 한 줄로 정의",',
-'  "headlines": ["광고문구1","광고문구2","광고문구3"],',
+'  "videoCopy": "영상 안에 크게 뜨는 대표 문구 한 줄",',
+'  "postCopy": ["게시글에 붙일 글1","게시글에 붙일 글2","게시글에 붙일 글3"],',
 '  "storyboard": [',
 '    {"time":"0-3초","visual":"화면에 보이는 것","caption":"화면에 뜨는 자막","voice":"말소리 대사 (없으면 빈 문자열)"}',
 "  ],",
@@ -1387,6 +1396,9 @@ req.brief,
 "규칙:",
 "- storyboard는 정확히 " + cuts + "컷, 시간 합계 " + req.sec + "초.",
 "- caption은 16자 이내. 화면에서 한눈에 읽히는 말로.",
+"- videoCopy는 영상 안에 크게 뜨는 한 줄. 20자 이내.",
+"- postCopy는 영상을 올릴 때 밑에 붙이는 글 3안 —",
+"  짧게 치는 것 / 마음을 건드리는 것 / 정보를 또박또박 주는 것. 각각 2~4줄.",
 "- 촬영 방법·준비물·편집 순서는 절대 쓰지 마세요. 만드는 것은 우리가 합니다.",
 "- hashtags는 6개 이내.",
 "- 과장 표현(최고, 1등, 유일, 최저가)은 쓰지 마세요.",
@@ -1402,10 +1414,25 @@ function parseResult(text){
   var o;
   try{ o = JSON.parse(s.slice(a, b+1)); }catch(e){ return null; }
   if(!o || !o.storyboard || !o.storyboard.length) return null;
+  return fillResult(o);
+}
+
+/* 빠진 항목을 빈 값으로 채웁니다.
+   **새로 만들 때와 예전 결과를 열 때 양쪽에서 반드시 불러야 합니다.**
+   한쪽만 부르면, 예전에 보낸 결과 코드를 여는 순간 화면이 그대로 멈춥니다. */
+function fillResult(o){
+  if(!o) return o;
   o.brandLine = o.brandLine || ""; o.headlines = o.headlines || [];
+  /* 문구를 '영상에 쓴 것' 과 '게시글에 쓸 것' 으로 나눴습니다.
+     예전에 보낸 결과에는 headlines 밖에 없으므로, 그걸 게시글 문구로 삼고
+     첫 번째를 영상 문구로 씁니다. 그래야 옛 결과 코드도 그대로 열립니다. */
+  o.videoCopy = o.videoCopy || ""; o.postCopy = o.postCopy || [];
+  if(!o.postCopy.length) o.postCopy = o.headlines;
+  if(!o.videoCopy && o.headlines.length) o.videoCopy = o.headlines[0];
   o.props = o.props || []; o.shootTips = o.shootTips || [];
   o.hashtags = o.hashtags || []; o.cta = o.cta || "";
   o.edit = o.edit || {}; o.edit.capcut = o.edit.capcut || []; o.edit.vllo = o.edit.vllo || [];
+  o.storyboard = o.storyboard || [];
   o.storyboard.forEach(function(c){
     c.time = c.time || ""; c.visual = c.visual || "";
     c.shot = c.shot || ""; c.caption = c.caption || ""; c.voice = c.voice || "";
@@ -1632,11 +1659,13 @@ function unpack(text, pin){
     if(!hasCrypto()) return Promise.resolve({ bad:"code" });
     if(!pin) return Promise.resolve({ need:"pin" });
     return unlockBytes(bytes, pin).then(function(o){
-      return (o && o.storyboard) ? { ok:o } : { bad:"pin" };
+      /* fillResult 를 꼭 거쳐야 합니다. 예전에 보낸 결과에는 새로 생긴 항목이
+         없어서, 그냥 넘기면 결과 화면이 그대로 멈춥니다. */
+      return (o && o.storyboard) ? { ok:fillResult(o) } : { bad:"pin" };
     });
   }
   return unsqueeze(kind, bytes).then(function(o){
-    return (o && o.storyboard) ? { ok:o } : { bad:"code" };
+    return (o && o.storyboard) ? { ok:fillResult(o) } : { bad:"code" };
   });
 }
 
@@ -1723,11 +1752,13 @@ function resultToText(r){
   var en = S.lang === "en";
   var W = en ? {
     brand:"[IN ONE LINE] ", head:"[HEADLINES]", script:"[SCRIPT]",
+    vcopy:"[COPY IN THE VIDEO] ", pcopy:"[COPY TO POST WITH IT]",
     scene:"   Scene: ", shot:"   Shot: ", capt:"   Caption: ", voice:"   Voice: ",
     caps:"[CAPTIONS ONLY]", props:"[PROPS]", tips:"[SHOOTING TIPS]",
     capcut:"[CAPCUT STEPS]", vllo:"[VLLO STEPS]", tags:"[HASHTAGS] ", cta:"[CLOSING LINE] "
   } : {
     brand:"[한 줄 정의] ", head:"[광고 문구]", script:"[대본]",
+    vcopy:"[영상에 쓴 문구] ", pcopy:"[게시글에 쓸 문구]",
     scene:"   화면: ", shot:"   촬영: ", capt:"   자막: ", voice:"   대사: ",
     caps:"[자막만]", props:"[준비물]", tips:"[촬영 요령]",
     capcut:"[캡컷 편집 순서]", vllo:"[블로 편집 순서]", tags:"[해시태그] ", cta:"[마지막 한 줄] "
@@ -1736,7 +1767,12 @@ function resultToText(r){
   /* 영상은 파일로 따로 보내드리므로, 이 글에는 같이 올릴 것만 담습니다.
      촬영 방법·준비물·편집 순서는 사장님이 할 일이 아니라서 넣지 않습니다. */
   L.push(W.brand + r.brandLine, "");
-  L.push(W.head); r.headlines.forEach(function(x,i){ L.push((i+1) + ". " + x); }); L.push("");
+  if(r.videoCopy) L.push(W.vcopy + r.videoCopy, "");
+  if(r.postCopy.length){
+    L.push(W.pcopy);
+    r.postCopy.forEach(function(x,i){ L.push((i+1) + ". " + x); });
+    L.push("");
+  }
   var caps = r.storyboard.map(function(c){ return c.caption; }).filter(Boolean);
   if(caps.length){ L.push(W.caps); caps.forEach(function(x){ L.push(x); }); L.push(""); }
   if(r.hashtags.length) L.push(W.tags + r.hashtags.join(" "));
@@ -2881,13 +2917,29 @@ SCREENS.done = function(app){
 };
 
 function paneP(box, r){
-  box.appendChild(eyebrow(t("headlines")));
-  box.appendChild(h("div",{cls:"card",style:"margin-top:10px"}, r.headlines.map(function(x,i){
-    return h("div",{style:"padding:10px 0;" + (i ? "border-top:1px dashed var(--edge)" : "")},[
-      h("span",{cls:"num",text:"0" + (i+1)}),
-      h("div",{cls:"disp",style:"font-size:21px;margin-top:4px",text:x})
-    ]);
-  })));
+  /* ① 영상에 이미 들어간 문구. 사장님이 따로 하실 일은 없고 '이렇게 나왔습니다' 보고입니다. */
+  if(r.videoCopy){
+    box.appendChild(eyebrow(t("videoCopy")));
+    box.appendChild(h("div",{cls:"card",style:"margin-top:10px"},[
+      h("div",{cls:"disp",style:"font-size:25px;line-height:1.2",text:r.videoCopy}),
+      h("p",{cls:"note",style:"margin-top:8px",text:t("videoCopyNote")})
+    ]));
+  }
+  /* ② 올릴 때 밑에 붙이는 글. 이건 사장님이 실제로 복사해서 쓰십니다.
+     그래서 줄마다 복사 단추를 따로 붙였습니다. */
+  if(r.postCopy.length){
+    box.appendChild(h("div",{style:"margin-top:26px"},[ eyebrow(t("postCopy")) ]));
+    box.appendChild(h("p",{cls:"note",style:"margin-top:4px",text:t("postCopyNote")}));
+    box.appendChild(h("div",{cls:"card",style:"margin-top:10px"}, r.postCopy.map(function(x,i){
+      var cb = h("button",{cls:"tiny",text:t("copy"),
+        on:{click:function(){ if(copyText(x)) flash(cb, t("copied"), t("copy")); }}});
+      return h("div",{style:"padding:12px 0;" + (i ? "border-top:1px dashed var(--edge)" : "")},[
+        h("span",{cls:"num",text:"0" + (i+1)}),
+        h("div",{style:"font-size:16px;margin-top:4px;white-space:pre-wrap",text:x}),
+        cb
+      ]);
+    })));
+  }
   if(r.cta){
     box.appendChild(h("div",{style:"margin-top:26px"},[ eyebrow(t("cta")) ]));
     box.appendChild(h("div",{cls:"disp",style:"font-size:23px;margin-top:8px;color:var(--accent-ink)",text:r.cta}));

@@ -139,7 +139,8 @@ const 남음 = 옛말.filter(x => 본문.includes(x));
 console.log("\n[ 결과 화면 ]");
 상자.S.lang = "ko";
 // 클로드가 내주는 답과 같은 모양의 가짜 결과를 하나 만들어 넣습니다
-상자.S.result = {
+// 일부러 '예전 모양'으로 둡니다 — videoCopy·postCopy 가 없는 옛 결과입니다
+상자.S.result = 상자.fillResult({
   brandLine: "12년 된 손칼국수집",
   headlines: ["새벽에 낸 육수", "점심 한 그릇", "12년째 같은 자리"],
   storyboard: [
@@ -150,7 +151,7 @@ console.log("\n[ 결과 화면 ]");
   edit: { capcut:["자르기"], vllo:[] },
   hashtags: ["#일산맛집", "#손칼국수"],
   cta: "점심에 들러주세요"
-};
+});
 상자.S.req = null;
 
 [["plan","광고 문구"],["caption","자막"],["tags","해시태그"]].forEach(function(칸){
@@ -164,12 +165,33 @@ console.log("\n[ 결과 화면 ]");
 
 상자.S.tab = "plan"; 상자.go("done");
 var 결과글 = 이름표.app.textContent;
-확인("광고 문구 3안 나옴", 결과글.includes("새벽에 낸 육수") && 결과글.includes("12년째 같은 자리"));
+확인("옛 결과도 열림", 결과글.includes("새벽에 낸 육수") && 결과글.includes("12년째 같은 자리"));
+확인("영상 문구 · 게시글 문구 나뉨",
+  결과글.includes("영상에 쓴 문구") && 결과글.includes("게시글에 쓸 문구"));
+
+// 새로 만든 결과는 두 가지가 따로 들어옵니다
+var 새결과 = 상자.fillResult({
+  brandLine:"칼국수집", headlines:[],
+  videoCopy:"매일 새벽 4시",
+  postCopy:["짧게 치는 글","마음을 건드리는 글","정보를 주는 글"],
+  storyboard:[{ time:"0-3초", visual:"솥", caption:"새벽 4시", voice:"" }],
+  hashtags:["#일산맛집"], cta:"들러주세요"
+});
+상자.S.result = 새결과; 상자.S.tab = "plan"; 상자.go("done");
+var 새글 = 이름표.app.textContent;
+확인("새 결과 · 영상 문구", 새글.includes("매일 새벽 4시"));
+확인("새 결과 · 게시글 문구 3안",
+  새글.includes("짧게 치는 글") && 새글.includes("마음을 건드리는 글") && 새글.includes("정보를 주는 글"));
+var 새보낼글 = 상자.resultToText(새결과);
+확인("보낼 글에도 나뉘어 들어감",
+  새보낼글.includes("[영상에 쓴 문구]") && 새보낼글.includes("[게시글에 쓸 문구]"));
 확인("촬영·편집 칸 없어짐", !결과글.includes("촬영 목록") && !결과글.includes("편집") && !결과글.includes("준비물"));
 
 // 카톡에 그대로 보내는 글에도 촬영·편집이 빠졌는지
 var 보낼글 = 상자.resultToText(상자.S.result);
-확인("보낼 글에 문구·자막·해시태그", 보낼글.includes("광고 문구") && 보낼글.includes("자막만") && 보낼글.includes("해시태그"));
+확인("보낼 글에 문구·자막·해시태그",
+  보낼글.includes("[영상에 쓴 문구]") && 보낼글.includes("[게시글에 쓸 문구]") &&
+  보낼글.includes("[자막만]") && 보낼글.includes("[해시태그]"));
 확인("보낼 글에 촬영·편집 없음",
   !보낼글.includes("촬영") && !보낼글.includes("준비물") && !보낼글.includes("캡컷") && !보낼글.includes("대본"),
   보낼글.match(/촬영|준비물|캡컷|대본/g) ? "남음 " + 보낼글.match(/촬영|준비물|캡컷|대본/g).join(",") : "");
